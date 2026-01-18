@@ -1,0 +1,424 @@
+// AIPrintly Database Schema
+// PostgreSQL with Prisma ORM
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+enum AssetSource {
+  UPLOAD
+  GENERATED
+}
+
+enum GenerationJobType {
+  IMAGE
+  STORY
+}
+
+enum GenerationJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ProductCategory {
+  MUG
+  APPAREL
+  PRINT
+  STORYBOOK
+}
+
+enum FulfilmentProvider {
+  PRINTFUL
+  BLURB
+}
+
+enum StockStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum FulfilmentStatus {
+  PENDING
+  SENT
+  FULFILLED
+  FAILED
+}
+
+enum AuthTokenType {
+  MAGIC_LINK
+  PASSWORD_RESET
+}
+
+enum CreditTransactionReason {
+  INITIAL_GRANT
+  SIGNUP_BONUS
+  GENERATION
+  REFUND
+  PURCHASE
+  ADMIN_ADJUSTMENT
+}
+
+// =============================================================================
+// MODELS
+// =============================================================================
+
+/// User accounts for authentication (customers only in Phase 1)
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  sessions   Session[]
+  assets     Asset[]
+  orders     Order[]
+  credits    UserCredits?
+  authTokens AuthToken[]
+
+  @@map("users")
+}
+
+/// Guest and authenticated sessions for cart persistence and asset ownership
+model Session {
+  id           String   @id @default(uuid())
+  userId       String?  @map("user_id")
+  sessionToken String   @unique @map("session_token")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user           User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assets         Asset[]
+  generationJobs GenerationJob[]
+  configurations ProductConfiguration[]
+  cartItems      CartItem[]
+  orders         Order[]
+  credits        UserCredits?
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+/// Magic link and password reset tokens
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String?       @map("user_id")
+  email     String
+  tokenHash String        @unique @map("token_hash")
+  type      AuthTokenType
+  expiresAt DateTime      @map("expires_at")
+  usedAt    DateTime?     @map("used_at")
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_tokens")
+}
+
+/// Uploaded or generated images stored in R2/S3
+model Asset {
+  id               String      @id @default(uuid())
+  sessionId        String      @map("session_id")
+  userId           String?     @map("user_id")
+  source           AssetSource
+  storageKey       String      @map("storage_key")
+  storageUrl       String      @map("storage_url")
+  mimeType         String      @map("mime_type")
+  width            Int
+  height           Int
+  fileSize         Int         @map("file_size")
+  originalFilename String?     @map("original_filename")
+  metadata         Json        @default("{}")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  session        Session                @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user           User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  configurations ProductConfiguration[]
+  storybooks     StorybookProject[]     @relation("CoverAsset")
+
+  @@index([sessionId])
+  @@index([userId])
+  @@map("assets")
+}
+
+/// Tracks AI generation jobs (images and stories)
+model GenerationJob {
+  id            String              @id @default(uuid())
+  sessionId     String              @map("session_id")
+  type          GenerationJobType
+  status        GenerationJobStatus @default(PENDING)
+  provider      String
+  providerJobId String?             @map("provider_job_id")
+  inputParams   Json                @default("{}") @map("input_params")
+  output        Json?
+  errorMessage  String?             @map("error_message")
+  startedAt     DateTime?           @map("started_at")
+  completedAt   DateTime?           @map("completed_at")
+  createdAt     DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  session            Session             @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  creditTransactions CreditTransaction[]
+
+  @@index([sessionId])
+  @@index([status])
+  @@index([providerJobId])
+  @@map("generation_jobs")
+}
+
+/// Product catalogue (seeded from Printful/Blurb sync)
+model Product {
+  id               String            @id @default(uuid())
+  externalId       String            @unique @map("external_id")
+  provider         FulfilmentProvider
+  category         ProductCategory
+  name             String
+  description      String            @default("")
+  basePricePence   Int               @map("base_price_pence")
+  sellingPricePence Int              @map("selling_price_pence")
+  isActive         Boolean           @default(true) @map("is_active")
+  metadata         Json              @default("{}")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  variants       ProductVariant[]
+  configurations ProductConfiguration[]
+
+  @@index([category])
+  @@index([isActive])
+  @@map("products")
+}
+
+/// Size, colour, and other options per product
+model ProductVariant {
+  id               String      @id @default(uuid())
+  productId        String      @map("product_id")
+  externalId       String      @map("external_id")
+  name             String
+  size             String?
+  colour           String?
+  colourHex        String?     @map("colour_hex")
+  basePricePence   Int         @map("base_price_pence")
+  sellingPricePence Int        @map("selling_price_pence")
+  stockStatus      StockStatus @default(IN_STOCK) @map("stock_status")
+  metadata         Json        @default("{}")
+  createdAt        DateTime    @default(now()) @map("created_at")
+
+  // Relations
+  product        Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
+  configurations ProductConfiguration[]
+
+  @@unique([productId, externalId])
+  @@index([productId])
+  @@map("product_variants")
+}
+
+/// User's customisation of a product with their asset
+model ProductConfiguration {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")
+  productId     String   @map("product_id")
+  variantId     String   @map("variant_id")
+  assetId       String   @map("asset_id")
+  customisation Json     @default("{}")
+  mockupUrl     String?  @map("mockup_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session    Session           @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  product    Product           @relation(fields: [productId], references: [id])
+  variant    ProductVariant    @relation(fields: [variantId], references: [id])
+  asset      Asset             @relation(fields: [assetId], references: [id])
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  storybook  StorybookProject?
+
+  @@index([sessionId])
+  @@index([productId])
+  @@map("product_configurations")
+}
+
+/// Extended data for storybook products
+model StorybookProject {
+  id              String   @id @default(uuid())
+  configurationId String   @unique @map("configuration_id")
+  title           String
+  childName       String   @map("child_name")
+  childAge        Int?     @map("child_age")
+  theme           String
+  pageCount       Int      @map("page_count")
+  pages           Json     @default("[]")
+  coverAssetId    String?  @map("cover_asset_id")
+  pdfUrl          String?  @map("pdf_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  configuration ProductConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+  coverAsset    Asset?               @relation("CoverAsset", fields: [coverAssetId], references: [id], onDelete: SetNull)
+
+  @@map("storybook_projects")
+}
+
+/// Session-based shopping cart
+model CartItem {
+  id              String   @id @default(uuid())
+  sessionId       String   @map("session_id")
+  configurationId String   @map("configuration_id")
+  quantity        Int      @default(1)
+  unitPricePence  Int      @map("unit_price_pence")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session       Session              @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  configuration ProductConfiguration @relation(fields: [configurationId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, configurationId])
+  @@index([sessionId])
+  @@map("cart_items")
+}
+
+/// Completed orders after successful payment
+model Order {
+  id                       String      @id @default(uuid())
+  orderNumber              String      @unique @map("order_number")
+  sessionId                String      @map("session_id")
+  userId                   String?     @map("user_id")
+  status                   OrderStatus @default(PENDING)
+  subtotalPence            Int         @map("subtotal_pence")
+  shippingPence            Int         @map("shipping_pence")
+  totalPence               Int         @map("total_pence")
+  currency                 String      @default("GBP")
+  shippingAddress          Json        @map("shipping_address")
+  billingAddress           Json?       @map("billing_address")
+  customerEmail            String      @map("customer_email")
+  customerName             String      @map("customer_name")
+  stripePaymentIntentId    String?     @map("stripe_payment_intent_id")
+  stripeCheckoutSessionId  String?     @map("stripe_checkout_session_id")
+  trackingToken            String      @unique @map("tracking_token")
+  notes                    String?
+  createdAt                DateTime    @default(now()) @map("created_at")
+  updatedAt                DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  session Session     @relation(fields: [sessionId], references: [id])
+  user    User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items   OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+/// Line items within an order
+model OrderItem {
+  id                 String            @id @default(uuid())
+  orderId            String            @map("order_id")
+  configurationId    String            @map("configuration_id")
+  productName        String            @map("product_name")
+  variantName        String            @map("variant_name")
+  quantity           Int
+  unitPricePence     Int               @map("unit_price_pence")
+  totalPricePence    Int               @map("total_price_pence")
+  fulfilmentProvider FulfilmentProvider @map("fulfilment_provider")
+  fulfilmentOrderId  String?           @map("fulfilment_order_id")
+  fulfilmentStatus   FulfilmentStatus  @default(PENDING) @map("fulfilment_status")
+  trackingNumber     String?           @map("tracking_number")
+  trackingUrl        String?           @map("tracking_url")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  order            Order              @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  configuration    ProductConfiguration @relation(fields: [configurationId], references: [id])
+  fulfilmentEvents FulfilmentEvent[]
+
+  @@index([orderId])
+  @@index([fulfilmentOrderId])
+  @@map("order_items")
+}
+
+/// Webhook events from Printful and Blurb
+model FulfilmentEvent {
+  id          String             @id @default(uuid())
+  orderItemId String             @map("order_item_id")
+  provider    FulfilmentProvider
+  eventType   String             @map("event_type")
+  payload     Json
+  processed   Boolean            @default(false)
+  createdAt   DateTime           @default(now()) @map("created_at")
+
+  // Relations
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderItemId])
+  @@index([processed])
+  @@map("fulfilment_events")
+}
+
+/// Credit balance for AI generation cost control
+model UserCredits {
+  id        String   @id @default(uuid())
+  sessionId String?  @unique @map("session_id")
+  userId    String?  @unique @map("user_id")
+  balance   Int      @default(3)
+  totalUsed Int      @default(0) @map("total_used")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session      Session?            @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user         User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions CreditTransaction[]
+
+  @@map("user_credits")
+}
+
+/// Audit log for all credit changes
+model CreditTransaction {
+  id            String                  @id @default(uuid())
+  userCreditsId String                  @map("user_credits_id")
+  amount        Int
+  reason        CreditTransactionReason
+  jobId         String?                 @map("job_id")
+  metadata      Json                    @default("{}")
+  createdAt     DateTime                @default(now()) @map("created_at")
+
+  // Relations
+  userCredits UserCredits    @relation(fields: [userCreditsId], references: [id], onDelete: Cascade)
+  job         GenerationJob? @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([userCreditsId])
+  @@index([createdAt])
+  @@map("credit_transactions")
+}
