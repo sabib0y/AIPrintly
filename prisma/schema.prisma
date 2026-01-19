@@ -81,6 +81,27 @@ enum CreditTransactionReason {
   ADMIN_ADJUSTMENT
 }
 
+enum AssetType {
+  IMAGE           // User uploads or AI-generated images
+  STORY_PDF       // Generated storybook PDFs
+  MOCKUP          // Product preview mockups
+}
+
+enum StorageTier {
+  HOT             // Active storage (S3 Standard)
+  WARM            // Infrequent access (S3 IA)
+  COLD            // Archive storage (S3 Glacier)
+  DELETED         // Soft-deleted, pending permanent removal
+}
+
+enum AssetStatus {
+  TEMPORARY       // Not saved, subject to auto-deletion
+  SAVED           // User explicitly saved/favourited
+  IN_CART         // Added to cart, extends retention
+  ORDERED         // Linked to completed order
+  ARCHIVED        // Moved to cold storage
+}
+
 // =============================================================================
 // MODELS
 // =============================================================================
@@ -142,20 +163,32 @@ model AuthToken {
 }
 
 /// Uploaded or generated images stored in R2/S3
+/// Implements storage policy with retention rules and tiered storage
 model Asset {
-  id               String      @id @default(uuid())
-  sessionId        String      @map("session_id")
-  userId           String?     @map("user_id")
+  id               String       @id @default(uuid())
+  sessionId        String       @map("session_id")
+  userId           String?      @map("user_id")
   source           AssetSource
-  storageKey       String      @map("storage_key")
-  storageUrl       String      @map("storage_url")
-  mimeType         String      @map("mime_type")
+  assetType        AssetType    @default(IMAGE) @map("asset_type")
+  storageKey       String       @map("storage_key")
+  storageUrl       String       @map("storage_url")
+  mimeType         String       @map("mime_type")
   width            Int
   height           Int
-  fileSize         Int         @map("file_size")
-  originalFilename String?     @map("original_filename")
-  metadata         Json        @default("{}")
-  createdAt        DateTime    @default(now()) @map("created_at")
+  fileSize         Int          @map("file_size")
+  originalFilename String?      @map("original_filename")
+  metadata         Json         @default("{}")
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  // Storage policy fields
+  status           AssetStatus  @default(TEMPORARY)
+  storageTier      StorageTier  @default(HOT) @map("storage_tier")
+  expiresAt        DateTime?    @map("expires_at")          // Auto-deletion date
+  archivedAt       DateTime?    @map("archived_at")         // When moved to cold storage
+  deletedAt        DateTime?    @map("deleted_at")          // Soft deletion timestamp
+  lastAccessedAt   DateTime?    @map("last_accessed_at")    // For access pattern tracking
+  retentionDays    Int          @default(7) @map("retention_days")  // Configurable per asset type
+  linkedToOrderId  String?      @map("linked_to_order_id")  // Prevents deletion if set
 
   // Relations
   session        Session                @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -165,6 +198,9 @@ model Asset {
 
   @@index([sessionId])
   @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([storageTier])
   @@map("assets")
 }
 
