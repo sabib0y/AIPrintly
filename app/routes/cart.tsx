@@ -1,14 +1,40 @@
-import { Link } from 'react-router';
-import { Button } from '~/components/ui/button';
+/**
+ * Shopping Cart Page
+ *
+ * Displays cart items with quantity controls, summary, and checkout button.
+ * Supports real-time updates via actions.
+ */
+
+import { type LoaderFunctionArgs, type ActionFunctionArgs, data } from 'react-router'
+import { useLoaderData, useNavigation, useFetcher, Link } from 'react-router'
+import { z } from 'zod'
+import { getSession, commitSession } from '~/services/session.server'
+import {
+  getCart,
+  updateCartItemQuantity,
+  removeCartItem,
+  validateCart,
+} from '~/services/cart.server'
+import { Button } from '~/components/ui/button'
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
-import { Separator } from '~/components/ui/separator';
-import { Skeleton } from '~/components/ui/skeleton';
+} from '~/components/ui/card'
+import { Separator } from '~/components/ui/separator'
+import { Input } from '~/components/ui/input'
+import {
+  CartItem,
+  CartItemSkeleton,
+  CartSummary,
+  EmptyCart,
+  type CartItemData,
+} from '~/components/cart'
+
+// UK shipping rate in pence (GBP 4.99)
+const UK_SHIPPING_PENCE = 499
 
 export function meta() {
   return [
@@ -17,41 +43,238 @@ export function meta() {
       name: 'description',
       content: 'Review your cart and proceed to checkout.',
     },
-  ];
+  ]
 }
 
-// Placeholder cart items
-const placeholderCartItems = [
-  {
-    id: 1,
-    name: 'Custom Mug - Mountain Sunrise',
-    category: 'Mugs',
-    price: 14.99,
-    quantity: 2,
-  },
-  {
-    id: 2,
-    name: 'T-Shirt - Abstract Art',
-    category: 'Apparel',
-    price: 24.99,
-    quantity: 1,
-  },
-  {
-    id: 3,
-    name: 'Art Print - Ocean Waves',
-    category: 'Prints',
-    price: 19.99,
-    quantity: 1,
-  },
-];
+/**
+ * Action schema for cart operations
+ */
+const actionSchema = z.discriminatedUnion('intent', [
+  z.object({
+    intent: z.literal('updateQuantity'),
+    itemId: z.string().uuid(),
+    quantity: z.number().int().min(1).max(99),
+  }),
+  z.object({
+    intent: z.literal('remove'),
+    itemId: z.string().uuid(),
+  }),
+])
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSession(request)
+  const sessionId = session.get('id')
+
+  if (!sessionId) {
+    return data(
+      { cart: null, validation: null, error: 'Session not found' },
+      {
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  }
+
+  try {
+    const cart = await getCart(sessionId)
+    const validation = cart.items.length > 0 ? await validateCart(sessionId) : null
+
+    return data(
+      { cart, validation, error: null },
+      {
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  } catch (error) {
+    console.error('Error loading cart:', error)
+    return data(
+      { cart: null, validation: null, error: 'Failed to load cart' },
+      {
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  }
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const session = await getSession(request)
+  const sessionId = session.get('id')
+
+  if (!sessionId) {
+    return data(
+      { success: false, error: 'Session not found' },
+      {
+        status: 401,
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  }
+
+  try {
+    const formData = await request.formData()
+    const intent = formData.get('intent')
+    const itemId = formData.get('itemId')
+    const quantityStr = formData.get('quantity')
+
+    // Parse and validate action data
+    const actionData = {
+      intent,
+      itemId,
+      quantity: quantityStr ? Number(quantityStr) : undefined,
+    }
+
+    const parseResult = actionSchema.safeParse(actionData)
+
+    if (!parseResult.success) {
+      return data(
+        { success: false, error: 'Invalid request' },
+        {
+          status: 400,
+          headers: { 'Set-Cookie': await commitSession(session) },
+        }
+      )
+    }
+
+    const action = parseResult.data
+
+    if (action.intent === 'updateQuantity') {
+      const result = await updateCartItemQuantity(
+        action.itemId,
+        sessionId,
+        action.quantity
+      )
+
+      if (!result) {
+        return data(
+          { success: false, error: 'Item not found' },
+          {
+            status: 404,
+            headers: { 'Set-Cookie': await commitSession(session) },
+          }
+        )
+      }
+
+      return data(
+        { success: true, cartItem: result },
+        {
+          headers: { 'Set-Cookie': await commitSession(session) },
+        }
+      )
+    }
+
+    if (action.intent === 'remove') {
+      const removed = await removeCartItem(action.itemId, sessionId)
+
+      if (!removed) {
+        return data(
+          { success: false, error: 'Item not found' },
+          {
+            status: 404,
+            headers: { 'Set-Cookie': await commitSession(session) },
+          }
+        )
+      }
+
+      return data(
+        { success: true, message: 'Item removed' },
+        {
+          headers: { 'Set-Cookie': await commitSession(session) },
+        }
+      )
+    }
+
+    return data(
+      { success: false, error: 'Unknown action' },
+      {
+        status: 400,
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Operation failed'
+    console.error('Cart action error:', error)
+
+    return data(
+      { success: false, error: message },
+      {
+        status: 400,
+        headers: { 'Set-Cookie': await commitSession(session) },
+      }
+    )
+  }
+}
 
 export default function CartPage() {
-  const subtotal = placeholderCartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const shipping = 4.99;
-  const total = subtotal + shipping;
+  const { cart, validation, error } = useLoaderData<typeof loader>()
+  const navigation = useNavigation()
+  const fetcher = useFetcher()
+
+  const isLoading = navigation.state === 'loading'
+  const isSubmitting = fetcher.state === 'submitting'
+
+  // Get validation errors/warnings for each item
+  const getItemValidation = (itemId: string) => {
+    if (!validation) return { error: undefined, warning: undefined, newPricePence: undefined }
+    const itemValidation = validation.items.find((v) => v.itemId === itemId)
+    if (!itemValidation) return { error: undefined, warning: undefined, newPricePence: undefined }
+
+    return {
+      error: itemValidation.validation.errors[0],
+      warning: itemValidation.validation.warnings[0],
+      newPricePence: itemValidation.validation.newPricePence,
+    }
+  }
+
+  const handleQuantityChange = (itemId: string, quantity: number) => {
+    fetcher.submit(
+      { intent: 'updateQuantity', itemId, quantity: String(quantity) },
+      { method: 'post' }
+    )
+  }
+
+  const handleRemove = (itemId: string) => {
+    fetcher.submit(
+      { intent: 'remove', itemId },
+      { method: 'post' }
+    )
+  }
+
+  // Error state
+  if (error && !cart) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Unable to load cart
+            </h1>
+            <p className="mt-2 text-gray-600 dark:text-gray-300">{error}</p>
+            <Button asChild className="mt-4">
+              <Link to="/products">Browse Products</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Empty cart state
+  if (!cart || cart.items.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Shopping Cart
+          </h1>
+          <EmptyCart />
+        </div>
+      </div>
+    )
+  }
+
+  // Check if checkout should be disabled
+  const hasValidationErrors = validation?.items.some(
+    (v) => !v.validation.isValid
+  )
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -67,89 +290,32 @@ export default function CartPage() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  Cart Items ({placeholderCartItems.length})
+                  Cart Items ({cart.itemCount})
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {placeholderCartItems.map((item, index) => (
-                  <div key={item.id}>
-                    <div className="flex gap-4">
-                      {/* Product Image Placeholder */}
-                      <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200 dark:bg-gray-800">
-                        <Skeleton className="h-full w-full" />
-                      </div>
-
-                      {/* Product Details */}
-                      <div className="flex flex-1 flex-col">
-                        <div className="flex justify-between">
-                          <div>
-                            <h3 className="font-medium text-gray-900 dark:text-white">
-                              {item.name}
-                            </h3>
-                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                              {item.category}
-                            </p>
-                          </div>
-                          <p className="font-medium text-gray-900 dark:text-white">
-                            £{(item.price * item.quantity).toFixed(2)}
-                          </p>
-                        </div>
-
-                        <div className="mt-auto flex items-center justify-between">
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-2">
-                            <Button variant="outline" size="icon" className="h-8 w-8">
-                              <span className="sr-only">Decrease quantity</span>
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M20 12H4"
-                                />
-                              </svg>
-                            </Button>
-                            <span className="w-8 text-center text-sm font-medium">
-                              {item.quantity}
-                            </span>
-                            <Button variant="outline" size="icon" className="h-8 w-8">
-                              <span className="sr-only">Increase quantity</span>
-                              <svg
-                                className="h-4 w-4"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 4v16m8-8H4"
-                                />
-                              </svg>
-                            </Button>
-                          </div>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    {index < placeholderCartItems.length - 1 && (
-                      <Separator className="mt-4" />
-                    )}
-                  </div>
-                ))}
+              <CardContent className="divide-y divide-gray-200 dark:divide-gray-800">
+                {isLoading ? (
+                  // Loading skeletons
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <CartItemSkeleton key={i} />
+                  ))
+                ) : (
+                  cart.items.map((item) => {
+                    const { error: itemError, warning, newPricePence } = getItemValidation(item.id)
+                    return (
+                      <CartItem
+                        key={item.id}
+                        item={item as CartItemData}
+                        onQuantityChange={handleQuantityChange}
+                        onRemove={handleRemove}
+                        isUpdating={isSubmitting}
+                        error={itemError}
+                        warning={warning}
+                        newPricePence={newPricePence}
+                      />
+                    )
+                  })
+                )}
               </CardContent>
               <CardFooter>
                 <Button variant="outline" asChild>
@@ -161,42 +327,18 @@ export default function CartPage() {
 
           {/* Order Summary Sidebar */}
           <div className="mt-8 lg:col-span-4 lg:mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    £{subtotal.toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Shipping</span>
-                  <span className="font-medium text-gray-900 dark:text-white">
-                    £{shipping.toFixed(2)}
-                  </span>
-                </div>
-                <Separator />
-                <div className="flex justify-between">
-                  <span className="text-base font-medium text-gray-900 dark:text-white">
-                    Total
-                  </span>
-                  <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                    £{total.toFixed(2)}
-                  </span>
-                </div>
-              </CardContent>
-              <CardFooter className="flex-col gap-3">
-                <Button className="w-full" size="lg">
-                  Proceed to Checkout
-                </Button>
-                <p className="text-center text-xs text-gray-500 dark:text-gray-400">
-                  Taxes calculated at checkout
-                </p>
-              </CardFooter>
-            </Card>
+            <CartSummary
+              subtotalPence={cart.subtotalPence}
+              shippingPence={UK_SHIPPING_PENCE}
+              itemCount={cart.itemCount}
+              isLoading={isLoading}
+              checkoutDisabled={hasValidationErrors}
+              checkoutDisabledMessage={
+                hasValidationErrors
+                  ? 'Please resolve issues with your cart items'
+                  : undefined
+              }
+            />
 
             {/* Promo Code */}
             <Card className="mt-4">
@@ -205,48 +347,78 @@ export default function CartPage() {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
-                  <input
+                  <Input
                     type="text"
                     placeholder="Enter code"
-                    className="flex h-10 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:border-gray-700 dark:bg-gray-950"
+                    aria-label="Promo code"
                   />
                   <Button variant="outline">Apply</Button>
                 </div>
+                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                  Promo codes coming soon!
+                </p>
               </CardContent>
             </Card>
-          </div>
-        </div>
 
-        {/* Empty Cart State (hidden by default, shown when cart is empty) */}
-        <div className="hidden">
-          <div className="py-16 text-center">
-            <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-              <svg
-                className="h-12 w-12 text-gray-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
+            {/* Trust Badges */}
+            <div className="mt-4 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-950">
+              <div className="flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>Free UK delivery on orders over GBP 50</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>30-day returns policy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <svg
+                    className="h-5 w-5 text-green-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  <span>Secure payment with Stripe</span>
+                </div>
+              </div>
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Your cart is empty
-            </h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-300">
-              Looks like you haven&apos;t added anything yet.
-            </p>
-            <Button asChild className="mt-6">
-              <Link to="/products">Browse Products</Link>
-            </Button>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

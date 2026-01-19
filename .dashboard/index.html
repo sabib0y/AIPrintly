@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AIPrintly Phase 1 — Progress Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+
+    .wave-pending { background: #f9fafb; border-left: 4px solid #d1d5db; }
+    .wave-in_progress { background: #fffbeb; border-left: 4px solid #f59e0b; }
+    .wave-review { background: #eff6ff; border-left: 4px solid #3b82f6; }
+    .wave-completed { background: #f0fdf4; border-left: 4px solid #22c55e; }
+
+    .task-pending { background: #f9fafb; border: 1px solid #e5e7eb; }
+    .task-tests_written { background: #fef3c7; border: 1px solid #fcd34d; }
+    .task-implementing { background: #e0e7ff; border: 1px solid #a5b4fc; }
+    .task-testing { background: #fce7f3; border: 1px solid #f9a8d4; }
+    .task-completed { background: #dcfce7; border: 1px solid #86efac; }
+    .task-blocked { background: #fee2e2; border: 1px solid #fca5a5; }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .dot-pending { background: #9ca3af; }
+    .dot-tests_written { background: #f59e0b; }
+    .dot-implementing { background: #6366f1; }
+    .dot-testing { background: #ec4899; }
+    .dot-completed { background: #22c55e; }
+    .dot-blocked { background: #ef4444; }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+    .progress-ring-circle {
+      transition: stroke-dashoffset 0.5s ease;
+    }
+
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    .animate-pulse-slow {
+      animation: pulse-slow 2s ease-in-out infinite;
+    }
+
+    .workstream-a { border-top: 3px solid #0ea5e9; }
+    .workstream-b { border-top: 3px solid #8b5cf6; }
+    .workstream-c { border-top: 3px solid #10b981; }
+    .workstream-d { border-top: 3px solid #f59e0b; }
+    .workstream-e { border-top: 3px solid #ec4899; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div class="max-w-7xl mx-auto p-6 lg:p-8">
+
+    <!-- Header -->
+    <header class="mb-8">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">AIPrintly Phase 1</h1>
+          <p class="text-gray-500 text-sm mt-1">Parallel Workstream Dashboard</p>
+        </div>
+        <div class="text-right text-sm text-gray-500">
+          <div>Last updated</div>
+          <div id="lastUpdated" class="font-medium text-gray-700">—</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Summary Row -->
+    <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
+      <!-- Progress Ring -->
+      <div class="col-span-2 lg:col-span-1 bg-white rounded-xl p-4 shadow-sm flex items-center justify-center">
+        <div class="relative">
+          <svg class="progress-ring w-20 h-20">
+            <circle
+              class="text-gray-200"
+              stroke="currentColor"
+              stroke-width="6"
+              fill="transparent"
+              r="34"
+              cx="40"
+              cy="40"
+            />
+            <circle
+              id="progressCircle"
+              class="progress-ring-circle text-sky-500"
+              stroke="currentColor"
+              stroke-width="6"
+              fill="transparent"
+              r="34"
+              cx="40"
+              cy="40"
+              stroke-dasharray="213.628"
+              stroke-dashoffset="213.628"
+              stroke-linecap="round"
+            />
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <span id="progressPercent" class="text-lg font-bold text-gray-900">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-3xl font-bold text-gray-900" id="totalTasks">0</div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mt-1">Total Tasks</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-3xl font-bold text-green-600" id="completed">0</div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mt-1">Completed</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-3xl font-bold text-amber-500" id="inProgress">0</div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mt-1">In Progress</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-3xl font-bold text-gray-400" id="pending">0</div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mt-1">Pending</div>
+      </div>
+      <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="text-3xl font-bold text-red-500" id="blocked">0</div>
+        <div class="text-xs text-gray-500 uppercase tracking-wide mt-1">Blocked</div>
+      </div>
+    </div>
+
+    <!-- Test Results -->
+    <div class="bg-white rounded-xl p-4 shadow-sm mb-8">
+      <div class="flex justify-between items-center mb-3">
+        <div class="flex items-center">
+          <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span class="font-medium text-gray-700">Test Suite</span>
+        </div>
+        <div class="text-sm">
+          <span id="testsPassing" class="font-semibold text-green-600">0</span>
+          <span class="text-gray-400">/</span>
+          <span id="testsTotal" class="text-gray-600">0</span>
+          <span class="text-gray-400 ml-1">passing</span>
+        </div>
+      </div>
+      <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div id="testBar" class="h-full bg-green-500 transition-all duration-500" style="width: 0%"></div>
+      </div>
+    </div>
+
+    <!-- Current Phase Highlight -->
+    <div id="currentPhaseHighlight" class="bg-sky-50 border border-sky-200 rounded-xl p-4 mb-8 hidden">
+      <div class="flex items-center">
+        <div class="w-2 h-2 bg-sky-500 rounded-full animate-pulse-slow mr-3"></div>
+        <span class="font-medium text-sky-800">Currently executing <span id="currentPhaseName">Wave 0</span></span>
+      </div>
+    </div>
+
+    <!-- Waves & Workstreams Container -->
+    <div class="space-y-6" id="waveContainer">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- Legend -->
+    <div class="mt-8 bg-white rounded-xl p-4 shadow-sm">
+      <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Task Status Legend</div>
+      <div class="flex flex-wrap gap-4 text-sm">
+        <div class="flex items-center"><span class="status-dot dot-pending"></span> Pending</div>
+        <div class="flex items-center"><span class="status-dot dot-tests_written"></span> Tests Written</div>
+        <div class="flex items-center"><span class="status-dot dot-implementing"></span> Implementing</div>
+        <div class="flex items-center"><span class="status-dot dot-testing"></span> Testing</div>
+        <div class="flex items-center"><span class="status-dot dot-completed"></span> Completed</div>
+        <div class="flex items-center"><span class="status-dot dot-blocked"></span> Blocked</div>
+      </div>
+    </div>
+
+    <!-- Workstream Legend -->
+    <div class="mt-4 bg-white rounded-xl p-4 shadow-sm">
+      <div class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Workstream Colours</div>
+      <div class="flex flex-wrap gap-4 text-sm">
+        <div class="flex items-center"><span class="w-3 h-3 rounded bg-sky-500 mr-2"></span> A: Asset Pipeline</div>
+        <div class="flex items-center"><span class="w-3 h-3 rounded bg-violet-500 mr-2"></span> B: Product Builder</div>
+        <div class="flex items-center"><span class="w-3 h-3 rounded bg-emerald-500 mr-2"></span> C: Commerce Stack</div>
+        <div class="flex items-center"><span class="w-3 h-3 rounded bg-amber-500 mr-2"></span> D: Fulfilment</div>
+        <div class="flex items-center"><span class="w-3 h-3 rounded bg-pink-500 mr-2"></span> E: Polish & QA</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-center text-xs text-gray-400">
+      <p>Auto-refreshes every 30 seconds • TDD-enforced workflow</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Auto-refresh
+    setTimeout(() => location.reload(), 30000);
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch('./state.json?' + Date.now());
+        const state = await response.json();
+        renderDashboard(state);
+      } catch (e) {
+        console.error('Failed to load state:', e);
+        document.getElementById('waveContainer').innerHTML = `
+          <div class="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+            <p class="text-red-600 font-medium">Failed to load dashboard state</p>
+            <p class="text-red-400 text-sm mt-1">Check that state.json exists</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderDashboard(state) {
+      // Last updated
+      const lastUpdated = new Date(state.lastUpdated);
+      document.getElementById('lastUpdated').textContent = lastUpdated.toLocaleString('en-GB', {
+        day: 'numeric', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      // Summary stats
+      document.getElementById('totalTasks').textContent = state.summary.totalTasks;
+      document.getElementById('completed').textContent = state.summary.completed;
+      document.getElementById('inProgress').textContent = state.summary.inProgress;
+      document.getElementById('pending').textContent = state.summary.pending;
+      document.getElementById('blocked').textContent = state.summary.blocked;
+
+      // Progress ring
+      const percent = state.summary.totalTasks > 0
+        ? Math.round((state.summary.completed / state.summary.totalTasks) * 100)
+        : 0;
+      document.getElementById('progressPercent').textContent = percent + '%';
+      const circumference = 2 * Math.PI * 34;
+      const offset = circumference - (percent / 100) * circumference;
+      document.getElementById('progressCircle').style.strokeDashoffset = offset;
+
+      // Test bar
+      document.getElementById('testsPassing').textContent = state.testResults.passing;
+      document.getElementById('testsTotal').textContent = state.testResults.total;
+      const testPercent = state.testResults.total > 0
+        ? (state.testResults.passing / state.testResults.total * 100)
+        : 0;
+      const testBar = document.getElementById('testBar');
+      testBar.style.width = testPercent + '%';
+      testBar.className = `h-full transition-all duration-500 ${
+        state.testResults.failing > 0 ? 'bg-red-500' :
+        testPercent === 100 ? 'bg-green-500' : 'bg-amber-500'
+      }`;
+
+      // Current phase highlight
+      const currentPhase = state.waves.find(w => w.status === 'in_progress');
+      const highlight = document.getElementById('currentPhaseHighlight');
+      if (currentPhase) {
+        highlight.classList.remove('hidden');
+        document.getElementById('currentPhaseName').textContent = currentPhase.name;
+      } else {
+        highlight.classList.add('hidden');
+      }
+
+      // Render waves
+      const container = document.getElementById('waveContainer');
+      container.innerHTML = state.waves.map(wave => renderWave(wave)).join('');
+    }
+
+    function renderWave(wave) {
+      const statusConfig = {
+        pending: { label: 'Pending', badge: 'bg-gray-100 text-gray-600' },
+        in_progress: { label: 'In Progress', badge: 'bg-amber-100 text-amber-700' },
+        review: { label: 'Ready for Review', badge: 'bg-blue-100 text-blue-700' },
+        completed: { label: 'Completed', badge: 'bg-green-100 text-green-700' }
+      };
+
+      const config = statusConfig[wave.status] || statusConfig.pending;
+      const isCurrentWave = wave.status === 'in_progress';
+
+      return `
+        <div class="wave-${wave.status} rounded-xl p-5 ${isCurrentWave ? 'ring-2 ring-amber-300' : ''}">
+          <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center">
+              <span class="text-lg font-semibold text-gray-800">${wave.name}</span>
+              ${wave.completedAt ? `
+                <span class="ml-3 text-xs text-gray-400">
+                  Completed ${new Date(wave.completedAt).toLocaleDateString('en-GB')}
+                </span>
+              ` : ''}
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-medium ${config.badge}">
+              ${config.label}
+            </span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            ${wave.streams.map(stream => renderStream(stream)).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStream(stream) {
+      const statusConfig = {
+        pending: { label: 'Pending', dot: 'dot-pending' },
+        tests_written: { label: 'Tests Written', dot: 'dot-tests_written' },
+        implementing: { label: 'Implementing', dot: 'dot-implementing' },
+        testing: { label: 'Testing', dot: 'dot-testing' },
+        completed: { label: 'Done', dot: 'dot-completed' },
+        blocked: { label: 'Blocked', dot: 'dot-blocked' }
+      };
+
+      const workstreamColours = {
+        'A': 'workstream-a',
+        'B': 'workstream-b',
+        'C': 'workstream-c',
+        'D': 'workstream-d',
+        'E': 'workstream-e',
+        '0': ''
+      };
+
+      const config = statusConfig[stream.status] || statusConfig.pending;
+      const completedCriteria = stream.acceptanceCriteria.filter(c => c.met).length;
+      const totalCriteria = stream.acceptanceCriteria.length;
+      const criteriaPercent = totalCriteria > 0 ? (completedCriteria / totalCriteria * 100) : 0;
+
+      const typeIcons = {
+        foundation: '🔧',
+        ui: '🎨',
+        api: '⚡',
+        integration: '🔗',
+        service: '⚙️',
+        component: '📦'
+      };
+
+      const workstreamLetter = stream.id.charAt(0);
+      const workstreamClass = workstreamColours[workstreamLetter] || '';
+
+      return `
+        <div class="task-${stream.status} ${workstreamClass} rounded-lg p-4 transition-all hover:shadow-md">
+          <div class="flex justify-between items-start mb-2">
+            <span class="font-mono text-xs text-gray-400">${stream.id}</span>
+            <div class="flex items-center">
+              <span class="status-dot ${config.dot}"></span>
+              <span class="text-xs text-gray-500">${config.label}</span>
+            </div>
+          </div>
+
+          <h3 class="font-medium text-gray-800 mb-2 flex items-center">
+            <span class="mr-2">${typeIcons[stream.type] || '📦'}</span>
+            ${stream.name}
+          </h3>
+
+          <div class="space-y-2 text-xs text-gray-500">
+            <div class="flex justify-between">
+              <span>Files</span>
+              <span class="font-medium text-gray-700">${stream.files.length}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Tests</span>
+              <span class="font-medium text-gray-700">${stream.testFiles.length}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Criteria</span>
+              <span class="font-medium text-gray-700">${completedCriteria}/${totalCriteria}</span>
+            </div>
+
+            <!-- Criteria Progress Bar -->
+            <div class="h-1.5 bg-gray-200 rounded-full overflow-hidden mt-2">
+              <div class="h-full bg-green-500 transition-all" style="width: ${criteriaPercent}%"></div>
+            </div>
+          </div>
+
+          ${stream.dependencies.length > 0 ? `
+            <div class="mt-3 pt-2 border-t border-gray-100 text-xs text-gray-400">
+              <span class="font-medium">Deps:</span> ${stream.dependencies.join(', ')}
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Initial load
+    loadDashboard();
+  </script>
+</body>
+</html>
