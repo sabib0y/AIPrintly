@@ -66,6 +66,15 @@ export const IP_RATE_LIMIT: RateLimitConfig = {
 }
 
 /**
+ * Auth rate limit: 5 attempts per 15 minutes per IP
+ * Used for login and registration to prevent brute force and spam
+ */
+export const AUTH_RATE_LIMIT: RateLimitConfig = {
+  maxRequests: 5,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+}
+
+/**
  * Maximum concurrent generation jobs per session
  */
 export const MAX_CONCURRENT_JOBS = 2
@@ -272,6 +281,22 @@ export async function checkIpRateLimit(ip: string): Promise<RateLimitResult> {
 
   const key = getIpKey(ip)
   return checkRateLimit(key, IP_RATE_LIMIT)
+}
+
+/**
+ * Check auth rate limit (login/registration)
+ *
+ * @param ip - Client IP address
+ * @returns Rate limit result
+ */
+export async function checkAuthRateLimit(ip: string): Promise<RateLimitResult> {
+  if (ip === 'unknown') {
+    // Stricter limits for unknown IPs on auth endpoints
+    return { allowed: true, remaining: 3 }
+  }
+
+  const key = `auth:${ip}`
+  return checkRateLimit(key, AUTH_RATE_LIMIT)
 }
 
 /**

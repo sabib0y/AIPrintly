@@ -17,4 +17,7 @@ export default [
 
   // Shopping cart
   route("cart", "routes/cart.tsx"),
+
+  // Checkout
+  route("checkout", "routes/checkout.tsx"),
 ] satisfies RouteConfig;

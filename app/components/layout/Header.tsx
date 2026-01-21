@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { Link } from 'react-router';
-import { Menu, ShoppingCart, User } from 'lucide-react';
+import { Link, Form } from 'react-router';
+import { Menu, ShoppingCart, User, LogOut } from 'lucide-react';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
 import {
@@ -50,6 +50,13 @@ export function Header({
 
   return (
     <>
+      {/* Skip to main content link for keyboard users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-sky-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
       <header
         className={cn(
           'sticky top-0 z-40 w-full',
@@ -75,11 +82,11 @@ export function Header({
             {/* Right side actions */}
             <div className="flex items-center gap-2">
               {/* Cart button - always visible */}
-              <Button variant="ghost" size="icon" asChild className="relative">
+              <Button variant="ghost" size="icon" asChild className="relative" data-testid="cart-button">
                 <Link to="/cart" aria-label="Shopping cart">
                   <ShoppingCart className="h-5 w-5" />
                   {cartItemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white">
+                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-[10px] font-bold text-white" data-testid="cart-count">
                       {cartItemCount > 99 ? '99+' : cartItemCount}
                     </span>
                   )}
@@ -90,18 +97,25 @@ export function Header({
               <div className="hidden md:flex items-center gap-2">
                 {isAuthenticated && user ? (
                   // Authenticated user menu
-                  <Button variant="ghost" size="icon" asChild>
-                    <Link to="/account" aria-label="My account">
-                      <User className="h-5 w-5" />
-                    </Link>
-                  </Button>
+                  <>
+                    <Button variant="ghost" size="icon" asChild data-testid="user-menu">
+                      <Link to="/account" aria-label="My account">
+                        <User className="h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Form method="post" action="/logout">
+                      <Button variant="ghost" size="icon" type="submit" aria-label="Log out" data-testid="logout-button">
+                        <LogOut className="h-5 w-5" />
+                      </Button>
+                    </Form>
+                  </>
                 ) : (
                   // Unauthenticated - show login/register
                   <>
-                    <Button variant="ghost" asChild>
+                    <Button variant="ghost" asChild data-testid="login-link">
                       <Link to="/login">Login</Link>
                     </Button>
-                    <Button asChild>
+                    <Button asChild data-testid="register-link">
                       <Link to="/register">Register</Link>
                     </Button>
                   </>

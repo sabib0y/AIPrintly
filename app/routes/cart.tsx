@@ -265,7 +265,7 @@ export default function CartPage() {
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Shopping Cart
           </h1>
-          <EmptyCart />
+          <EmptyCart data-testid="empty-cart-message" />
         </div>
       </div>
     )
@@ -318,7 +318,7 @@ export default function CartPage() {
                 )}
               </CardContent>
               <CardFooter>
-                <Button variant="outline" asChild>
+                <Button variant="outline" asChild data-testid="continue-shopping">
                   <Link to="/products">Continue Shopping</Link>
                 </Button>
               </CardFooter>

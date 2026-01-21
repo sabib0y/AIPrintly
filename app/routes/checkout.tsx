@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import {
   ShippingForm,
   OrderSummary,
-  GuestGate,
   type ShippingAddress,
   type OrderItem,
 } from '~/components/checkout'
@@ -51,6 +50,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSession(request)
   const sessionId = session.get('id')
   const userId = await getUserIdFromSession(request)
+
+  // Require authentication for checkout
+  if (!userId) {
+    const url = new URL(request.url)
+    return redirect(`/login?redirectTo=${encodeURIComponent(url.pathname)}`)
+  }
 
   if (!sessionId) {
     return data(
@@ -194,16 +199,15 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
-type CheckoutStep = 'guest-gate' | 'shipping' | 'payment'
+type CheckoutStep = 'shipping' | 'payment'
 
 export default function CheckoutPage() {
-  const { cart, isAuthenticated, error } = useLoaderData<typeof loader>()
+  const { cart, error } = useLoaderData<typeof loader>()
   const navigation = useNavigation()
   const fetcher = useFetcher()
 
-  const [step, setStep] = useState<CheckoutStep>(
-    isAuthenticated ? 'shipping' : 'guest-gate'
-  )
+  // User is always authenticated at this point (enforced by loader)
+  const [step, setStep] = useState<CheckoutStep>('shipping')
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null)
 
   const isLoading = navigation.state === 'loading'
@@ -241,19 +245,6 @@ export default function CheckoutPage() {
         </div>
       </div>
     )
-  }
-
-  const handleContinueAsGuest = () => {
-    setStep('shipping')
-  }
-
-  const handleAccountCreated = (email: string) => {
-    // Pre-fill email in shipping form
-    setShippingAddress((prev) => ({
-      ...prev!,
-      email,
-    } as ShippingAddress))
-    setStep('shipping')
   }
 
   const handleShippingSubmit = async (address: ShippingAddress) => {
@@ -296,19 +287,9 @@ export default function CheckoutPage() {
           {/* Progress Indicator */}
           <div className="mt-6 flex items-center gap-2 text-sm">
             <span
-              className={step === 'guest-gate' ? 'font-medium text-sky-600' : 'text-gray-500'}
-            >
-              {isAuthenticated ? '' : '1. Account'}
-            </span>
-            {!isAuthenticated && (
-              <span className="text-gray-300" aria-hidden="true">
-                /
-              </span>
-            )}
-            <span
               className={step === 'shipping' ? 'font-medium text-sky-600' : 'text-gray-500'}
             >
-              {isAuthenticated ? '1' : '2'}. Shipping
+              1. Shipping
             </span>
             <span className="text-gray-300" aria-hidden="true">
               /
@@ -316,7 +297,7 @@ export default function CheckoutPage() {
             <span
               className={step === 'payment' ? 'font-medium text-sky-600' : 'text-gray-500'}
             >
-              {isAuthenticated ? '2' : '3'}. Payment
+              2. Payment
             </span>
           </div>
         </div>
@@ -324,15 +305,6 @@ export default function CheckoutPage() {
         <div className="lg:grid lg:grid-cols-12 lg:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-7">
-            {/* Guest Gate Step */}
-            {step === 'guest-gate' && (
-              <GuestGate
-                onContinueAsGuest={handleContinueAsGuest}
-                onAccountCreated={handleAccountCreated}
-                isLoading={isLoading || isSubmitting}
-              />
-            )}
-
             {/* Shipping Step */}
             {step === 'shipping' && (
               <Card>
@@ -354,17 +326,6 @@ export default function CheckoutPage() {
                     onSubmit={handleShippingSubmit}
                     isSubmitting={isSubmitting}
                   />
-
-                  {!isAuthenticated && (
-                    <Button
-                      variant="ghost"
-                      className="mt-4 w-full"
-                      onClick={() => setStep('guest-gate')}
-                      disabled={isSubmitting}
-                    >
-                      Back to Account Options
-                    </Button>
-                  )}
                 </CardContent>
               </Card>
             )}

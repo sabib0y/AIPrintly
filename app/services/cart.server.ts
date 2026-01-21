@@ -66,6 +66,22 @@ const cartItemInclude = {
 }
 
 /**
+ * Extended include with customisation data
+ */
+const cartItemIncludeWithCustomisation = {
+  configuration: {
+    select: {
+      id: true,
+      mockupUrl: true,
+      customisation: true,
+      product: true,
+      variant: true,
+      asset: true,
+    },
+  },
+}
+
+/**
  * Get cart items for a session
  *
  * @param sessionId - The session ID
@@ -74,7 +90,7 @@ const cartItemInclude = {
 export async function getCart(sessionId: string): Promise<CartWithItems> {
   const items = await prisma.cartItem.findMany({
     where: { sessionId },
-    include: cartItemInclude,
+    include: cartItemIncludeWithCustomisation,
     orderBy: { createdAt: 'desc' },
   })
 

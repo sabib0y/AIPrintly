@@ -10,6 +10,9 @@ First, evaluate whether tracking docs need updating (follow `/track` criteria):
 
 - Review conversation context for work done this session
 - If meaningful work was done (code, fixes, config, features): update relevant docs
+  - `planning/phase1/progress-log.md`
+  - `planning/phase1/10-roadmap.md`
+  - `.dashboard/state.json`
 - If nothing worth logging: note "No tracking updates needed"
 
 ### 2. Session Summary
@@ -56,9 +59,9 @@ Provide a brief summary of the session based on:
 Example:
 
 ```
-**Tracking:** Updated progress-log.md
+**Tracking:** Updated progress-log.md, state.json
 
-## Session Summary — 2025-01-18
+## Session Summary — 2026-01-18
 
 ### Done
 - Implemented file upload handler with R2 storage
@@ -84,6 +87,6 @@ Or:
 ```
 **Tracking:** No updates needed (planning/research only)
 
-## Session Summary — 2025-01-18
+## Session Summary — 2026-01-18
 ...
 ```

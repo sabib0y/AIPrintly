@@ -248,6 +248,22 @@ export async function handleCheckoutCompleted(
     // Don't throw - order is already created
   }
 
+  // Route order to fulfilment providers
+  try {
+    const { routeOrderToProviders } = await import('./fulfilment/order-router.server')
+    const routingResult = await routeOrderToProviders(order.id)
+
+    if (!routingResult.success) {
+      console.error('Fulfilment routing had errors:', routingResult.errors)
+      // Don't throw - order is created, items marked as failed for retry
+    } else {
+      console.log('Order routed to providers:', routingResult.providerOrders)
+    }
+  } catch (error) {
+    console.error('Failed to route order to fulfilment:', error)
+    // Don't throw - order is created, can be manually processed
+  }
+
   return order.id
 }
 

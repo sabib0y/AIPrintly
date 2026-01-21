@@ -40,8 +40,12 @@ if (!sessionSecret) {
  *
  * - 7-day rolling expiry (resets on each request)
  * - httpOnly for security
- * - sameSite lax for CSRF protection whilst allowing navigation
+ * - sameSite strict for maximum CSRF protection
  * - secure in production
+ *
+ * Note: 'strict' prevents the cookie being sent on cross-origin navigations
+ * (e.g., clicking links from emails). Users may need to re-authenticate in
+ * some edge cases, but this is a worthwhile tradeoff for security.
  */
 const sessionStorage = createCookieSessionStorage<SessionData, SessionFlashData>(
   {
@@ -50,7 +54,7 @@ const sessionStorage = createCookieSessionStorage<SessionData, SessionFlashData>
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
       path: '/',
-      sameSite: 'lax',
+      sameSite: 'strict',
       secrets: [sessionSecret],
       secure: process.env.NODE_ENV === 'production',
     },

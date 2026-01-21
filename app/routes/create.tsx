@@ -74,7 +74,7 @@ export default function CreatePage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Supports JPG, PNG, and SVG formats
+                  Supports JPG, PNG, and WebP formats
                 </li>
                 <li className="flex items-center">
                   <svg
@@ -105,8 +105,8 @@ export default function CreatePage() {
                   Preview on multiple products
                 </li>
               </ul>
-              <Button className="w-full" size="lg">
-                Upload Image
+              <Button asChild className="w-full" size="lg" data-testid="upload-option">
+                <Link to="/create/upload">Upload Image</Link>
               </Button>
             </CardContent>
           </Card>
@@ -182,10 +182,12 @@ export default function CreatePage() {
                 </li>
               </ul>
               <Button
+                asChild
                 className="w-full bg-indigo-600 hover:bg-indigo-700"
                 size="lg"
+                data-testid="generate-option"
               >
-                Start Generating
+                <Link to="/create/generate">Start Generating</Link>
               </Button>
             </CardContent>
           </Card>

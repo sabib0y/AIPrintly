@@ -65,10 +65,10 @@ export default function IndexPage() {
               required.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
-              <Button asChild size="lg">
+              <Button asChild size="lg" data-testid="hero-create-button">
                 <Link to="/create">Start Creating</Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" data-testid="browse-products-link">
                 <Link to="/products">Browse Products</Link>
               </Button>
             </div>
@@ -90,7 +90,7 @@ export default function IndexPage() {
 
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {categories.map((category) => (
-              <Link key={category.title} to={category.href}>
+              <Link key={category.title} to={category.href} data-testid="category-card">
                 <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
                   <CardHeader>
                     <div className="mb-2 text-4xl">{category.icon}</div>

@@ -251,6 +251,16 @@ BLURB_API_KEY="..."
 - Mobile app
 - Multi-language support
 
+## Session Context — Read These First
+
+At the start of each session, read these files to understand current progress:
+
+1. **`planning/phase1/progress-log.md`** — Chronological engineering log with what's been done
+2. **`planning/phase1/10-roadmap.md`** — Master roadmap with workstream status
+3. **`.dashboard/state.json`** — Machine-readable project state (tasks, tests, notes)
+
+Use `/wake` command for a quick session briefing, `/track` to update progress, `/sleep` to wrap up.
+
 ## Planning Documents
 
 Reference these in `planning/phase1/`:
@@ -262,6 +272,7 @@ Reference these in `planning/phase1/`:
 - `06-fulfilment-integration.md` - Printful/Blurb integration
 - `07-product-builder.md` - Product customisation
 - `08-checkout-and-orders.md` - Payment and orders
+- `10-roadmap.md` - Master roadmap with parallel workstreams
 
 ## Error Handling
 

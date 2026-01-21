@@ -2,11 +2,13 @@
  * Checkout Success Page
  *
  * Displayed after successful payment.
+ * Fetches order details from database based on Stripe session ID.
  */
 
 import { type LoaderFunctionArgs, data, redirect } from 'react-router'
 import { useLoaderData, Link } from 'react-router'
 import { getSession, commitSession } from '~/services/session.server'
+import { prisma } from '~/services/prisma.server'
 import { Button } from '~/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card'
 import { Separator } from '~/components/ui/separator'
@@ -21,11 +23,13 @@ export function meta() {
 }
 
 interface OrderSummary {
+  id: string
   orderNumber: string
   customerEmail: string
   customerName: string
   totalPence: number
   shippingPence: number
+  subtotalPence: number
   itemCount: number
   createdAt: string
   trackingToken: string
@@ -36,25 +40,81 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const sessionId = session.get('id')
   const url = new URL(request.url)
 
-  // Get order details from query params or session
-  // In production, this would fetch from database based on Stripe session_id
+  // Get Stripe session ID from query params
   const stripeSessionId = url.searchParams.get('session_id')
 
   if (!sessionId) {
     return redirect('/cart')
   }
 
-  // For now, return mock data
-  // In production, this would fetch the actual order
-  const orderSummary: OrderSummary = {
-    orderNumber: 'AIP-2025-0001',
-    customerEmail: 'customer@example.com',
-    customerName: 'John Smith',
-    totalPence: 5997,
-    shippingPence: 499,
-    itemCount: 3,
-    createdAt: new Date().toISOString(),
-    trackingToken: 'abc123xyz',
+  // If we have a Stripe session ID, fetch the order
+  let orderSummary: OrderSummary | null = null
+
+  if (stripeSessionId) {
+    // Find order by Stripe checkout session ID
+    const order = await prisma.order.findFirst({
+      where: {
+        stripeCheckoutSessionId: stripeSessionId,
+      },
+      include: {
+        items: true,
+      },
+    })
+
+    if (order) {
+      orderSummary = {
+        id: order.id,
+        orderNumber: order.orderNumber,
+        customerEmail: order.customerEmail,
+        customerName: order.customerName,
+        totalPence: order.totalPence,
+        shippingPence: order.shippingPence,
+        subtotalPence: order.subtotalPence,
+        itemCount: order.items.length,
+        createdAt: order.createdAt.toISOString(),
+        trackingToken: order.trackingToken,
+      }
+    }
+  }
+
+  // Fallback: Try to find the most recent order for this session
+  if (!orderSummary) {
+    const recentOrder = await prisma.order.findFirst({
+      where: {
+        sessionId: sessionId,
+        status: { in: ['PAID', 'PROCESSING'] },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        items: true,
+      },
+    })
+
+    if (recentOrder) {
+      orderSummary = {
+        id: recentOrder.id,
+        orderNumber: recentOrder.orderNumber,
+        customerEmail: recentOrder.customerEmail,
+        customerName: recentOrder.customerName,
+        totalPence: recentOrder.totalPence,
+        shippingPence: recentOrder.shippingPence,
+        subtotalPence: recentOrder.subtotalPence,
+        itemCount: recentOrder.items.length,
+        createdAt: recentOrder.createdAt.toISOString(),
+        trackingToken: recentOrder.trackingToken,
+      }
+    }
+  }
+
+  // If still no order found, redirect to home with error
+  if (!orderSummary) {
+    console.warn('No order found for checkout success page', {
+      sessionId,
+      stripeSessionId,
+    })
+    return redirect('/?error=order_not_found')
   }
 
   return data(
@@ -128,7 +188,7 @@ export default function CheckoutSuccessPage() {
                   Items ({order.itemCount})
                 </span>
                 <span className="text-gray-900 dark:text-white">
-                  {formatPrice(order.totalPence - order.shippingPence)}
+                  {formatPrice(order.subtotalPence)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -205,7 +265,7 @@ export default function CheckoutSuccessPage() {
         {/* Actions */}
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <Button asChild>
-            <Link to={`/orders/${order.trackingToken}`}>
+            <Link to={`/orders/${order.id}?token=${order.trackingToken}`}>
               Track Your Order
               <ArrowRight className="ml-2 h-4 w-4" aria-hidden="true" />
             </Link>

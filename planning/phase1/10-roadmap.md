@@ -24,11 +24,25 @@ Each layer has explicit exit criteria.
 | Layer | Status |
 |-------|--------|
 | 1. Product Definition | ✅ Complete |
-| 2. Build (Workstreams A-E) | 🔜 Not started |
-| 3. Verification | 🔜 Not started |
+| 2. Build (Workstreams A-E) | 🟡 In Progress (Wave 0 + A/B/C + Wave I + D done, E partial) |
+| 3. Verification (E2E + QA) | 🟡 In Progress (E2E infrastructure done) |
 | 4. Deployment | 🔜 Not started |
 
-**Overall Progress**: ~10% (planning complete)
+**Overall Progress**: ~80% (Wave 0 + Workstreams A, B, C + Wave I + D complete, E and Wave II in progress)
+
+### Workstream Status
+
+| Workstream | Status | Tests |
+|------------|--------|-------|
+| Wave 0 — Foundation | ✅ Complete | — |
+| A — Asset Pipeline | ✅ Complete | 417 passing |
+| B — Product Builder | ✅ Complete | (included above) |
+| C — Commerce Stack | ✅ Complete | (included above) |
+| Wave I — Integration | ✅ Complete | — |
+| D — Fulfilment | ✅ Complete | 35 passing |
+| E — Polish & QA | 🟡 In Progress (E.1, E.2, E.4 done) | — |
+| Wave II — E2E Testing | 🟡 In Progress (infra done, tests need fixes) | 8/20 passing |
+| Wave III — Human Polish | 🔜 Not started | — |
 
 ---
 
@@ -45,6 +59,8 @@ All specs complete:
 - [x] `08-checkout-and-orders.md` — Payments + tracking
 - [x] `09-out-of-scope.md` — Exclusions
 - [x] `11-tech-stack-recommendation.md` — Technology choices
+- [x] `12-storage-policy.md` — Asset retention tiers
+- [x] `13-e2e-testing.md` — E2E testing specification
 
 ---
 
@@ -80,7 +96,7 @@ The build is structured into **5 independent workstreams** that can run simultan
                                       ▼
                     ┌─────────────────────────────────────┐
                     │     INTEGRATION (Wave I)            │
-                    │  Connect workstreams + E2E flows    │
+                    │  Connect workstreams + flow tests   │
                     └─────────────────────────────────────┘
                                       │
             ┌─────────────────────────┼─────────────────────────┐
@@ -96,6 +112,27 @@ The build is structured into **5 independent workstreams** that can run simultan
 │  • Order routing  │                               │  • Performance    │
 │  • Tracking page  │                               │  • Security       │
 └───────────────────┘                               └───────────────────┘
+            │                                                   │
+            └─────────────────────────┬─────────────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────────┐
+                    │     E2E TESTING (Wave II)           │
+                    │  Full user journey validation       │
+                    │  See: 13-e2e-testing.md             │
+                    └─────────────────────────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────────┐
+                    │     VERIFICATION (Layer 3)          │
+                    │  UAT + Bug fixes + Final QA         │
+                    └─────────────────────────────────────┘
+                                      │
+                                      ▼
+                    ┌─────────────────────────────────────┐
+                    │     DEPLOYMENT (Layer 4)            │
+                    │  Production + Monitoring + Launch   │
+                    └─────────────────────────────────────┘
 ```
 
 ---
@@ -534,6 +571,222 @@ Mobile, accessibility, performance, security.
 
 ---
 
+## Wave II — E2E Testing
+
+**Dependencies**: Workstreams D, E complete
+
+**Owner**: Full team
+
+**Specification**: See `13-e2e-testing.md` for full details
+
+Comprehensive end-to-end testing of all user journeys using Playwright.
+
+### Test Categories
+
+#### II.1 — Critical User Journeys (P0)
+Must pass before any release:
+- [ ] Upload → Build → Cart → Checkout → Order (with quality warnings)
+- [ ] Generate → Build → Cart → Checkout → Order (with credits)
+- [ ] Story → Illustrations → Storybook → Checkout → Order
+- [ ] Payment success/failure/3DS scenarios
+- [ ] Guest-to-account conversion flow
+
+#### II.2 — Authentication Tests (P1)
+- [ ] Email/password registration
+- [ ] Login/logout flows
+- [ ] Session migration (guest → user)
+- [ ] Protected route access
+
+#### II.3 — Asset Pipeline Tests (P1)
+- [ ] Image upload (formats, sizes, quality)
+- [ ] AI generation (credits, polling, errors)
+- [ ] Story generation
+- [ ] Rate limiting behaviour
+
+#### II.4 — Builder Tests (P1)
+- [ ] Canvas interactions (drag, scale, rotate)
+- [ ] Mobile touch gestures
+- [ ] Variant selection
+- [ ] Mockup generation
+- [ ] Quality warnings display
+
+#### II.5 — Commerce Tests (P1)
+- [ ] Cart CRUD operations
+- [ ] Checkout validation
+- [ ] Stripe integration
+- [ ] Order creation
+
+#### II.6 — Mobile Tests (P2)
+- [ ] Responsive layouts
+- [ ] Touch interactions
+- [ ] Mobile checkout UX
+
+#### II.7 — Accessibility Tests (P2)
+- [ ] Keyboard navigation
+- [ ] Screen reader compatibility
+- [ ] WCAG 2.1 AA compliance
+
+### Browser Coverage
+
+| Browser | Desktop | Mobile |
+|---------|---------|--------|
+| Chrome | ✓ | ✓ (Pixel 5) |
+| Firefox | ✓ | — |
+| Safari | ✓ | ✓ (iPhone 13) |
+| — | — | iPad Pro |
+
+### Exit Criteria
+
+- [ ] All P0 (Critical) tests pass on Chromium, Firefox, WebKit
+- [ ] All P0 tests pass on mobile viewports
+- [ ] All P1 tests pass on Chromium
+- [ ] No critical accessibility violations
+- [ ] Test execution time < 15 minutes
+- [ ] Flaky test rate < 2%
+
+### Tests: 93 (see 13-e2e-testing.md for breakdown)
+
+---
+
+## Wave III — Human Validation & Polish
+
+**Dependencies**: Wave II complete
+
+**Owner**: Product owner + Developer
+
+Human walkthrough of the complete application to identify UI/UX issues, refine copy, and polish the experience before verification.
+
+### Tasks
+
+#### III.1 — Manual Flow Walkthrough
+- [ ] Complete upload → build → cart → checkout flow
+- [ ] Complete generate → build → cart → checkout flow
+- [ ] Complete storybook creation flow
+- [ ] Test all product types (mug, apparel, print, storybook)
+- [ ] Test guest and authenticated flows
+- [ ] Test on mobile devices
+
+#### III.2 — UI Refinements
+- [ ] Visual consistency audit
+- [ ] Spacing and alignment fixes
+- [ ] Loading state improvements
+- [ ] Error state improvements
+- [ ] Empty state improvements
+- [ ] Animation and transition polish
+
+#### III.3 — Copy & Content
+- [ ] Review all user-facing text
+- [ ] Error message clarity
+- [ ] Button and CTA text
+- [ ] Help text and tooltips
+- [ ] Email template content
+
+#### III.4 — Edge Cases
+- [ ] Network error handling
+- [ ] Session timeout handling
+- [ ] Payment failure recovery
+- [ ] Browser back/forward behaviour
+- [ ] Refresh behaviour during flows
+
+### Exit Criteria
+
+- [ ] All flows completed without confusion
+- [ ] UI feels polished and consistent
+- [ ] Copy is clear and helpful
+- [ ] Edge cases handled gracefully
+- [ ] Product owner sign-off
+
+---
+
+# Layer 3 — Verification
+
+**Dependencies**: Wave III complete
+
+**Owner**: Full team + stakeholders
+
+Final verification before production deployment.
+
+### Tasks
+
+#### V.1 — User Acceptance Testing (UAT)
+- [ ] Stakeholder walkthrough of all flows
+- [ ] Real user testing (5+ participants)
+- [ ] Feedback collection and triage
+- [ ] Critical bug fixes
+
+#### V.2 — Regression Testing
+- [ ] Full E2E suite green across all browsers
+- [ ] Unit test suite green (target: 420+ tests)
+- [ ] Performance regression check
+
+#### V.3 — Final QA Checklist
+- [ ] All copy reviewed and approved
+- [ ] Legal content signed off
+- [ ] Error messages user-friendly
+- [ ] Loading states present everywhere
+- [ ] Empty states handled gracefully
+- [ ] 404/500 pages functional
+
+#### V.4 — Security Audit
+- [ ] Penetration testing (basic)
+- [ ] Dependency vulnerability scan
+- [ ] Environment variables secured
+- [ ] No secrets in codebase
+- [ ] Rate limits effective
+
+### Exit Criteria
+
+- [ ] UAT sign-off from stakeholders
+- [ ] All critical/high bugs fixed
+- [ ] No security vulnerabilities
+- [ ] Documentation complete
+
+---
+
+# Layer 4 — Deployment
+
+**Dependencies**: Layer 3 complete
+
+**Owner**: DevOps / Full team
+
+Production deployment and monitoring setup.
+
+### Tasks
+
+#### P.1 — Infrastructure
+- [ ] Production database provisioned
+- [ ] Environment variables configured
+- [ ] Domain and SSL setup
+- [ ] CDN configuration
+
+#### P.2 — Monitoring
+- [ ] Error tracking (Sentry)
+- [ ] Uptime monitoring
+- [ ] Performance monitoring
+- [ ] Alert thresholds configured
+
+#### P.3 — Deployment
+- [ ] CI/CD pipeline for production
+- [ ] Blue-green or canary deployment
+- [ ] Database migrations tested
+- [ ] Rollback procedure documented
+
+#### P.4 — Launch Checklist
+- [ ] Stripe live mode enabled
+- [ ] Email provider verified
+- [ ] Fulfilment API keys (Printful, Blurb) production
+- [ ] Analytics tracking (privacy-compliant)
+- [ ] Cookie consent banner
+
+### Exit Criteria
+
+- [ ] Production environment stable
+- [ ] Monitoring alerts configured
+- [ ] Launch checklist complete
+- [ ] Team on-call rotation set
+
+---
+
 # Parallel Execution Timeline
 
 ```
@@ -554,10 +807,16 @@ Week 7-8:   ██████████████████████�
             (Dev 1 + Dev 3)           (Dev 2 + QA)
 
 Week 9:     ████████████████████████████████████████████
-            Layer 3 — Verification (ALL TEAM)
+            Wave II — E2E Testing (ALL TEAM)
+            Playwright tests, cross-browser, mobile
 
 Week 10:    ████████████████████████████████████████████
+            Layer 3 — Verification (ALL TEAM)
+            UAT, bug fixes, security audit
+
+Week 11:    ████████████████████████████████████████████
             Layer 4 — Deployment (ALL TEAM)
+            Production setup, monitoring, launch
 ```
 
 ---
@@ -571,8 +830,12 @@ Week 10:    ██████████████████████�
 | B (Builder) | Wave 0 | Wave I |
 | C (Commerce) | Wave 0 | Wave I |
 | Wave I | A, B, C | D, E |
-| D (Fulfilment) | Wave I | — |
-| E (Polish) | Wave I | — |
+| D (Fulfilment) | Wave I | Wave II |
+| E (Polish) | Wave I | Wave II |
+| Wave II (E2E) | D, E | Wave III |
+| Wave III (Human Polish) | Wave II | Layer 3 |
+| Layer 3 (Verification) | Wave III | Layer 4 |
+| Layer 4 (Deployment) | Layer 3 | — |
 
 ---
 
@@ -586,7 +849,10 @@ Teams must sync at these checkpoints:
 | SP2 | Mid A/B/C | Demo progress, resolve blockers |
 | SP3 | End of A/B/C | Pre-integration review |
 | SP4 | End of Wave I | Full flow demo |
-| SP5 | End of D/E | Pre-verification review |
+| SP5 | End of D/E | Pre-E2E testing review |
+| SP6 | End of Wave II | E2E results review, bug triage |
+| SP7 | End of Layer 3 | UAT sign-off, go/no-go decision |
+| SP8 | Post-Launch | Launch retrospective |
 
 ---
 
@@ -646,16 +912,35 @@ interface Order {
 
 # Test Targets by Workstream
 
-| Workstream | Unit | Integration | E2E | Total |
-|------------|------|-------------|-----|-------|
-| Wave 0 | 30 | 15 | 5 | 50 |
-| A (Assets) | 50 | 25 | 5 | 80 |
-| B (Builder) | 40 | 25 | 5 | 70 |
-| C (Commerce) | 50 | 30 | 10 | 90 |
-| Wave I | 10 | 15 | 15 | 40 |
-| D (Fulfilment) | 30 | 25 | 5 | 60 |
-| E (Polish) | 10 | 10 | 10 | 30 |
-| **Total** | **220** | **145** | **55** | **420** |
+### Unit & Integration Tests (Vitest)
+
+| Workstream | Unit | Integration | Total |
+|------------|------|-------------|-------|
+| Wave 0 | 30 | 15 | 45 |
+| A (Assets) | 50 | 25 | 75 |
+| B (Builder) | 40 | 25 | 65 |
+| C (Commerce) | 50 | 30 | 80 |
+| Wave I | 10 | 15 | 25 |
+| D (Fulfilment) | 30 | 25 | 55 |
+| E (Polish) | 10 | 10 | 20 |
+| **Subtotal** | **220** | **145** | **365** |
+
+### E2E Tests (Playwright) — Wave II
+
+| Category | Tests | Priority |
+|----------|-------|----------|
+| Critical User Journeys | 15 | P0 |
+| Authentication | 12 | P1 |
+| Asset Pipeline | 15 | P1 |
+| Product Builder | 18 | P1 |
+| Commerce | 15 | P1 |
+| Mobile | 8 | P2 |
+| Accessibility | 10 | P2 |
+| **Subtotal** | **93** | — |
+
+### Grand Total: 458 tests
+
+See `13-e2e-testing.md` for full E2E test specification.
 
 ---
 
@@ -728,4 +1013,4 @@ SENTRY_DSN=xxx
 
 ---
 
-*Last updated: 2025-01-18*
+*Last updated: 2026-01-20*

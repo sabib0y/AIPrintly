@@ -5,10 +5,23 @@
  * Supports mug, apparel, print, and storybook product types.
  */
 
-import { useState, useCallback } from 'react';
-import { Link, useParams, useLoaderData } from 'react-router';
+import { useState, useCallback, useEffect } from 'react';
+import { Link, useParams, useLoaderData, useSearchParams, useNavigate } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
+import { data } from 'react-router';
 import { Button } from '~/components/ui/button';
+import { Spinner } from '~/components/ui/spinner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/components/ui/alert-dialog';
+import { prisma } from '~/services/prisma.server';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Canvas } from '~/components/builder/Canvas';
 import { TransformControls } from '~/components/builder/TransformControls';
@@ -59,18 +72,31 @@ const PRODUCT_TYPE_MAP: Record<string, string> = {
 };
 
 /**
- * Loader to fetch products for the builder
+ * Asset data from loader
  */
-export async function loader({ params }: LoaderFunctionArgs) {
+interface LoaderAsset {
+  id: string;
+  storageUrl: string;
+  width: number;
+  height: number;
+}
+
+/**
+ * Loader to fetch products and optional asset for the builder
+ */
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { productType } = params;
+  const url = new URL(request.url);
+  const assetId = url.searchParams.get('assetId');
 
   if (!productType || !PRODUCT_TYPE_MAP[productType]) {
-    return {
+    return data({
       productType: null,
       products: [],
       printArea: null,
+      asset: null,
       error: 'Invalid product type',
-    };
+    });
   }
 
   const category = PRODUCT_TYPE_MAP[productType];
@@ -81,16 +107,38 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   const printArea = PRINT_AREAS[productType] ?? PRINT_AREAS.mug;
 
-  return {
+  // Fetch asset if assetId provided
+  let asset: LoaderAsset | null = null;
+  if (assetId) {
+    try {
+      const foundAsset = await prisma.asset.findUnique({
+        where: { id: assetId },
+        select: {
+          id: true,
+          storageUrl: true,
+          width: true,
+          height: true,
+        },
+      });
+      if (foundAsset) {
+        asset = foundAsset;
+      }
+    } catch (err) {
+      console.error('Failed to fetch asset:', err);
+    }
+  }
+
+  return data({
     productType,
     products: result.products as ProductWithVariants[],
     printArea,
+    asset,
     error: null,
-  };
+  });
 }
 
 export default function BuilderPage() {
-  const { productType, products, printArea, error } = useLoaderData<typeof loader>();
+  const { productType, products, printArea, asset, error } = useLoaderData<typeof loader>();
 
   // State for selected product and variant
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
@@ -102,12 +150,48 @@ export default function BuilderPage() {
   const [elements, setElements] = useState<DesignElement[]>([]);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
 
+  // Track if we've loaded the initial asset
+  const [initialAssetLoaded, setInitialAssetLoaded] = useState(false);
+
   // State for mockup
   const [mockupUrl, setMockupUrl] = useState<string | null>(null);
   const [isGeneratingMockup, setIsGeneratingMockup] = useState(false);
 
   // State for quality
   const [qualityAssessment, setQualityAssessment] = useState<QualityAssessment | null>(null);
+
+  // State for current asset ID (for add to cart)
+  const [currentAssetId, setCurrentAssetId] = useState<string | null>(asset?.id ?? null);
+
+  // Load asset from URL params on mount
+  useEffect(() => {
+    if (asset && !initialAssetLoaded && printArea) {
+      const newElement: DesignElement = {
+        id: `elem-${Date.now()}`,
+        imageUrl: asset.storageUrl,
+        imageWidth: asset.width,
+        imageHeight: asset.height,
+        transform: {
+          position: {
+            x: (printArea as PrintArea).width / 2,
+            y: (printArea as PrintArea).height / 2,
+          },
+          scale: 1,
+          rotation: 0,
+        },
+        isSelected: true,
+      };
+
+      setElements([newElement]);
+      setSelectedElementId(newElement.id);
+      setCurrentAssetId(asset.id);
+      setInitialAssetLoaded(true);
+
+      // Calculate initial quality
+      const assessment = assessQuality(newElement, printArea as PrintArea);
+      setQualityAssessment(assessment);
+    }
+  }, [asset, initialAssetLoaded, printArea]);
 
   // Get selected product and variant
   const selectedProduct = products.find((p) => p.id === selectedProductId);
@@ -273,14 +357,86 @@ export default function BuilderPage() {
     }
   };
 
-  // Handle add to cart
-  const handleAddToCart = () => {
-    // TODO: Implement add to cart
-    console.log('Add to cart', {
-      productId: selectedProductId,
-      variantId: selectedVariantId,
-      elements,
-    });
+  // State for add to cart
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
+  const [showQualityWarningDialog, setShowQualityWarningDialog] = useState(false);
+  const navigate = useNavigate();
+
+  // Check if quality has warnings (but not blocking errors)
+  const hasQualityWarnings = qualityAssessment !== null && (
+    !qualityAssessment.isDpiAcceptable ||
+    !qualityAssessment.isWithinBounds ||
+    qualityAssessment.warnings.length > 0
+  );
+
+  // Handle add to cart button click
+  const handleAddToCartClick = () => {
+    if (!selectedProductId || !selectedVariantId || !currentAssetId || elements.length === 0) {
+      setAddToCartError('Please complete your design before adding to basket');
+      return;
+    }
+
+    // Show warning dialog if there are quality warnings
+    if (hasQualityWarnings) {
+      setShowQualityWarningDialog(true);
+      return;
+    }
+
+    // Otherwise proceed directly
+    handleAddToCart();
+  };
+
+  // Handle add to cart (actual submission)
+  const handleAddToCart = async () => {
+    if (!selectedProductId || !selectedVariantId || !currentAssetId || elements.length === 0) {
+      setAddToCartError('Please complete your design before adding to basket');
+      return;
+    }
+
+    const element = elements[0];
+    if (!element) return;
+
+    setIsAddingToCart(true);
+    setAddToCartError(null);
+    setShowQualityWarningDialog(false);
+
+    try {
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          productId: selectedProductId,
+          variantId: selectedVariantId,
+          assetId: currentAssetId,
+          customisation: {
+            position: element.transform.position,
+            scale: element.transform.scale,
+            rotation: element.transform.rotation,
+          },
+          mockupUrl: mockupUrl ?? undefined,
+          quantity: 1,
+          qualityWarnings: qualityAssessment?.warnings ?? [],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setAddToCartError(data.error || 'Failed to add to basket');
+        return;
+      }
+
+      // Success - navigate to cart
+      navigate('/cart');
+    } catch (error) {
+      console.error('Add to cart error:', error);
+      setAddToCartError('Something went wrong. Please try again.');
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   // Show error state
@@ -351,6 +507,7 @@ export default function BuilderPage() {
                   showZoomControls
                   showDimensions
                   showBleedMargin
+                  data-testid="builder-canvas"
                 />
 
                 {/* Quality Warning */}
@@ -370,9 +527,9 @@ export default function BuilderPage() {
                 {/* Transform Controls */}
                 {selectedElement && (
                   <div className="mt-6 border-t border-gray-200 pt-6 dark:border-gray-700">
-                    <h3 className="mb-4 text-sm font-medium text-gray-900 dark:text-white">
+                    <h2 className="mb-4 text-sm font-medium text-gray-900 dark:text-white">
                       Transform Controls
-                    </h3>
+                    </h2>
                     <TransformControls
                       transform={selectedElement.transform}
                       onTransformChange={handleTransformChange}
@@ -451,18 +608,36 @@ export default function BuilderPage() {
 
                 {/* Add to Cart */}
                 <Button
-                  onClick={handleAddToCart}
+                  onClick={handleAddToCartClick}
                   className="w-full"
                   size="lg"
                   disabled={
+                    isAddingToCart ||
                     elements.length === 0 ||
                     !selectedVariant ||
-                    selectedVariant.stockStatus === 'OUT_OF_STOCK' ||
-                    (qualityAssessment !== null && !qualityAssessment.isAcceptable)
+                    !currentAssetId ||
+                    selectedVariant.stockStatus === 'OUT_OF_STOCK'
                   }
+                  data-testid="add-to-cart-button"
                 >
-                  Add to Basket
+                  {isAddingToCart ? (
+                    <>
+                      <Spinner size="sm" className="mr-2" />
+                      Adding to Basket...
+                    </>
+                  ) : hasQualityWarnings ? (
+                    'Add to Basket (with warnings)'
+                  ) : (
+                    'Add to Basket'
+                  )}
                 </Button>
+
+                {/* Error message */}
+                {addToCartError && (
+                  <p className="text-center text-sm text-red-600">
+                    {addToCartError}
+                  </p>
+                )}
 
                 {elements.length === 0 && (
                   <p className="text-center text-sm text-gray-500">
@@ -472,23 +647,63 @@ export default function BuilderPage() {
               </CardContent>
             </Card>
 
-            {/* Help Section */}
+            {/* Help Section - Device-aware instructions */}
             <Card>
               <CardContent className="py-4">
-                <h4 className="font-medium text-gray-900 dark:text-white">
+                <h2 className="font-medium text-gray-900 dark:text-white">
                   Need Help?
-                </h4>
-                <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                </h2>
+                {/* Desktop instructions (hidden on touch devices) */}
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400 hidden md:block">
                   <li>Drag and drop to position your design</li>
                   <li>Use slider or scroll to resize</li>
                   <li>Press R to rotate by 15 degrees</li>
                   <li>Press Delete to remove design</li>
+                </ul>
+                {/* Mobile/touch instructions (visible on small screens) */}
+                <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400 md:hidden">
+                  <li>Drag with one finger to move your design</li>
+                  <li>Pinch with two fingers to resize</li>
+                  <li>Twist with two fingers to rotate</li>
+                  <li>Tap outside the design to deselect</li>
                 </ul>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Quality Warning Confirmation Dialog */}
+      <AlertDialog open={showQualityWarningDialog} onOpenChange={setShowQualityWarningDialog}>
+        <AlertDialogContent data-testid="quality-confirm-dialog" aria-labelledby="quality-dialog-title" aria-describedby="quality-dialog-description">
+          <AlertDialogHeader>
+            <AlertDialogTitle id="quality-dialog-title">Quality Warning</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div id="quality-dialog-description" className="space-y-3">
+                <p>
+                  Your design has the following quality issues that may affect print results:
+                </p>
+                {qualityAssessment && qualityAssessment.warnings.length > 0 && (
+                  <ul className="list-disc list-inside space-y-1 text-amber-600 dark:text-amber-400">
+                    {qualityAssessment.warnings.map((warning, index) => (
+                      <li key={index}>{warning}</li>
+                    ))}
+                  </ul>
+                )}
+                <p className="font-medium">
+                  Do you want to proceed anyway?
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Adjust Design</AlertDialogCancel>
+            <AlertDialogAction onClick={handleAddToCart} data-testid="confirm-quality-warning">
+              Proceed Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

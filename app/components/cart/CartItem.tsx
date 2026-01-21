@@ -21,6 +21,9 @@ export interface CartItemData {
   configuration: {
     id: string
     mockupUrl: string | null
+    customisation?: {
+      qualityWarnings?: string[]
+    } | null
     product: {
       name: string
       category: string
@@ -67,13 +70,15 @@ export function CartItem({
     id,
     quantity,
     unitPricePence,
-    configuration: { mockupUrl, product, variant, asset },
+    configuration: { mockupUrl, customisation, product, variant, asset },
   } = item
 
   const totalPricePence = unitPricePence * quantity
   const imageUrl = mockupUrl || asset.storageUrl
   const isOutOfStock = variant.stockStatus === 'OUT_OF_STOCK'
   const isLowStock = variant.stockStatus === 'LOW_STOCK'
+  const qualityWarnings = customisation?.qualityWarnings ?? []
+  const hasQualityWarnings = qualityWarnings.length > 0
 
   const handleQuantityChange = (newQuantity: number) => {
     onQuantityChange(id, newQuantity)
@@ -169,6 +174,19 @@ export function CartItem({
           <div className="mt-2 flex items-center gap-2 text-sm text-amber-600" role="alert">
             <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
             <span>{warning}</span>
+          </div>
+        )}
+        {hasQualityWarnings && !error && !warning && (
+          <div className="mt-2 text-sm text-amber-600" role="alert">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+              <span className="font-medium">Quality warnings:</span>
+            </div>
+            <ul className="ml-6 mt-1 list-disc text-xs">
+              {qualityWarnings.map((warning, index) => (
+                <li key={index}>{warning}</li>
+              ))}
+            </ul>
           </div>
         )}
 

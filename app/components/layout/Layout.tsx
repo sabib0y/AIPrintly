@@ -46,7 +46,7 @@ export function Layout({
       {showHeader && <Header {...headerProps} />}
 
       {/* Main content */}
-      <main className={cn('flex-1', mainClassName)}>{children}</main>
+      <main id="main-content" className={cn('flex-1', mainClassName)}>{children}</main>
 
       {/* Footer */}
       {showFooter && <Footer {...footerProps} />}

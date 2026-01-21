@@ -1,0 +1,550 @@
+<testsuites id="" name="" tests="20" failures="12" skipped="0" errors="0" time="41.973299">
+<testsuite name="auth/login.spec.ts" timestamp="2026-01-21T00:00:17.097Z" hostname="chromium" tests="8" failures="7" skipped="0" time="145.845" errors="0">
+<testcase name="User Login › user can login with valid credentials" classname="auth/login.spec.ts" time="25.175">
+<failure message="login.spec.ts:12:3 user can login with valid credentials" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:12:3 › User Login › user can login with valid credentials ────────
+
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByTestId('user-menu')
+
+
+      23 |
+      24 |     // Logout
+    > 25 |     await page.getByTestId('user-menu').click()
+         |                                         ^
+      26 |     await page.getByTestId('logout-button').click()
+      27 |
+      28 |     // Now login
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:25:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-user-can-login-with-valid-credentials-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Login › shows error for invalid credentials" classname="auth/login.spec.ts" time="19.881">
+<failure message="login.spec.ts:41:3 shows error for invalid credentials" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:41:3 › User Login › shows error for invalid credentials ──────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('form-error')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByTestId('form-error')
+
+
+      49 |
+      50 |     // Should show error message
+    > 51 |     await expect(loginPage.formError).toBeVisible()
+         |                                       ^
+      52 |     const errorText = await loginPage.getFormErrorText()
+      53 |     expect(errorText?.toLowerCase()).toContain('invalid')
+      54 |   })
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:51:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-invalid-credentials-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Login › shows error for incorrect password" classname="auth/login.spec.ts" time="25.119">
+<failure message="login.spec.ts:56:3 shows error for incorrect password" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:56:3 › User Login › shows error for incorrect password ───────────
+
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByTestId('user-menu')
+
+
+      67 |
+      68 |     // Logout
+    > 69 |     await page.getByTestId('user-menu').click()
+         |                                         ^
+      70 |     await page.getByTestId('logout-button').click()
+      71 |
+      72 |     // Try to login with wrong password
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:69:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-shows-error-for-incorrect-password-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Login › shows validation error for empty fields" classname="auth/login.spec.ts" time="9.709">
+<failure message="login.spec.ts:84:3 shows validation error for empty fields" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:84:3 › User Login › shows validation error for empty fields ──────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      92 |       (await loginPage.emailError.isVisible()) ||
+      93 |       (await loginPage.formError.isVisible())
+    > 94 |     expect(hasError).toBe(true)
+         |                      ^
+      95 |   })
+      96 |
+      97 |   test('can navigate to register page', async ({ page }) => {
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:94:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-show-a6f2a-tion-error-for-empty-fields-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Login › can navigate to register page" classname="auth/login.spec.ts" time="9.713">
+</testcase>
+<testcase name="User Login › login preserves redirect parameter" classname="auth/login.spec.ts" time="25.162">
+<failure message="login.spec.ts:106:3 login preserves redirect parameter" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:106:3 › User Login › login preserves redirect parameter ──────────
+
+    TimeoutError: locator.click: Timeout 15000ms exceeded.
+    Call log:
+      - waiting for getByTestId('user-menu')
+
+
+      118 |
+      119 |     // Logout
+    > 120 |     await page.getByTestId('user-menu').click()
+          |                                         ^
+      121 |     await page.getByTestId('logout-button').click()
+      122 |
+      123 |     // Go to login with redirect
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:120:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-preserves-redirect-parameter-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Login › login form is accessible by keyboard" classname="auth/login.spec.ts" time="19.843">
+<failure message="login.spec.ts:134:3 login form is accessible by keyboard" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:134:3 › User Login › login form is accessible by keyboard ────────
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByTestId('email-input')
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for getByTestId('email-input')
+        14 × locator resolved to <input id="email" type="email" name="email" autocomplete="email" aria-invalid="false" data-testid="email-input" placeholder="you@example.com" class="flex h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-950 dark:placeholder:t…/>
+           - unexpected value "inactive"
+
+
+      138 |     // Tab through form fields
+      139 |     await page.keyboard.press('Tab')
+    > 140 |     await expect(loginPage.emailInput).toBeFocused()
+          |                                        ^
+      141 |
+      142 |     await page.keyboard.press('Tab')
+      143 |     await expect(loginPage.passwordInput).toBeFocused()
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:140:40
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-User-Login-login-form-is-accessible-by-keyboard-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Logout › user can logout" classname="auth/login.spec.ts" time="11.243">
+<failure message="login.spec.ts:162:3 user can logout" type="FAILURE">
+<![CDATA[  [chromium] › auth/login.spec.ts:162:3 › Logout › user can logout ─────────────────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('user-menu')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByTestId('user-menu')
+
+
+      173 |
+      174 |     // User should be logged in
+    > 175 |     await expect(page.getByTestId('user-menu')).toBeVisible()
+          |                                                 ^
+      176 |
+      177 |     // Logout
+      178 |     await page.getByTestId('user-menu').click()
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/login.spec.ts:175:49
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-login-Logout-user-can-logout-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-login-Logout-user-can-logout-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-login-Logout-user-can-logout-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-login-Logout-user-can-logout-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-login-Logout-user-can-logout-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-login-Logout-user-can-logout-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="auth/registration.spec.ts" timestamp="2026-01-21T00:00:17.097Z" hostname="chromium" tests="7" failures="5" skipped="0" time="75.657" errors="0">
+<testcase name="User Registration › new user can register with email and password" classname="auth/registration.spec.ts" time="12.345">
+<failure message="registration.spec.ts:12:3 new user can register with email and password" type="FAILURE">
+<![CDATA[  [chromium] › auth/registration.spec.ts:12:3 › User Registration › new user can register with email and password 
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected: "http://localhost:5173/"
+    Received: "http://localhost:5173/register"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 10000ms
+        14 × unexpected value "http://localhost:5173/register"
+
+
+      22 |
+      23 |     // Should redirect to home after successful registration
+    > 24 |     await expect(page).toHaveURL('/')
+         |                        ^
+      25 |
+      26 |     // User should be logged in
+      27 |     await expect(page.getByTestId('user-menu')).toBeVisible()
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/registration.spec.ts:24:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-5cafd-ter-with-email-and-password-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Registration › shows validation error for invalid email" classname="auth/registration.spec.ts" time="14.594">
+<failure message="registration.spec.ts:30:3 shows validation error for invalid email" type="FAILURE">
+<![CDATA[  [chromium] › auth/registration.spec.ts:30:3 › User Registration › shows validation error for invalid email 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('email-error')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByTestId('email-error')
+
+
+      40 |
+      41 |     // Should show email error
+    > 42 |     await expect(registerPage.emailError).toBeVisible()
+         |                                           ^
+      43 |   })
+      44 |
+      45 |   test('shows validation error for weak password', async ({ page }) => {
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/registration.spec.ts:42:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-62486-ion-error-for-invalid-email-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Registration › shows validation error for weak password" classname="auth/registration.spec.ts" time="4.627">
+</testcase>
+<testcase name="User Registration › shows validation error for password mismatch" classname="auth/registration.spec.ts" time="15.043">
+<failure message="registration.spec.ts:62:3 shows validation error for password mismatch" type="FAILURE">
+<![CDATA[  [chromium] › auth/registration.spec.ts:62:3 › User Registration › shows validation error for password mismatch 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByTestId('confirm-password-error')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByTestId('confirm-password-error')
+
+
+      72 |
+      73 |     // Should show confirm password error
+    > 74 |     await expect(registerPage.confirmPasswordError).toBeVisible()
+         |                                                     ^
+      75 |   })
+      76 |
+      77 |   test('can navigate to login page', async ({ page }) => {
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/registration.spec.ts:74:53
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-095f6-error-for-password-mismatch-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="User Registration › can navigate to login page" classname="auth/registration.spec.ts" time="3.026">
+</testcase>
+<testcase name="User Registration › registration form is accessible by keyboard" classname="auth/registration.spec.ts" time="11.418">
+<failure message="registration.spec.ts:86:3 registration form is accessible by keyboard" type="FAILURE">
+<![CDATA[  [chromium] › auth/registration.spec.ts:86:3 › User Registration › registration form is accessible by keyboard 
+
+    Error: expect(locator).toBeFocused() failed
+
+    Locator:  getByTestId('email-input')
+    Expected: focused
+    Received: inactive
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toBeFocused" with timeout 10000ms
+      - waiting for getByTestId('email-input')
+        14 × locator resolved to <input id="email" type="email" name="email" autocomplete="email" aria-invalid="false" data-testid="email-input" placeholder="you@example.com" class="flex h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-gray-950 dark:placeholder:t…/>
+           - unexpected value "inactive"
+
+
+      90 |     // Tab through form fields
+      91 |     await page.keyboard.press('Tab')
+    > 92 |     await expect(registerPage.emailInput).toBeFocused()
+         |                                           ^
+      93 |
+      94 |     await page.keyboard.press('Tab')
+      95 |     await expect(registerPage.passwordInput).toBeFocused()
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/registration.spec.ts:92:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-registration-User-Reg-25b7a-m-is-accessible-by-keyboard-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Registration with redirect › redirects to original page after registration" classname="auth/registration.spec.ts" time="14.604">
+<failure message="registration.spec.ts:106:3 redirects to original page after registration" type="FAILURE">
+<![CDATA[  [chromium] › auth/registration.spec.ts:106:3 › Registration with redirect › redirects to original page after registration 
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/(login|register)/
+    Received string:  "http://localhost:5173/checkout"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 10000ms
+        14 × unexpected value "http://localhost:5173/checkout"
+
+
+      112 |
+      113 |     // Should redirect to login/register
+    > 114 |     await expect(page).toHaveURL(/\/(login|register)/)
+          |                        ^
+      115 |
+      116 |     // Register
+      117 |     await page.goto('/register?redirect=/checkout')
+        at /Users/admin.paul.idemudia/Desktop/code2/my_work/AIPrintly/e2e/tests/auth/registration.spec.ts:114:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/test-failed-1.png]]
+
+[[ATTACHMENT|../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/video.webm]]
+
+[[ATTACHMENT|../../test-results/auth-registration-Registra-311cf-nal-page-after-registration-chromium/error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="critical/homepage.spec.ts" timestamp="2026-01-21T00:00:17.097Z" hostname="chromium" tests="5" failures="0" skipped="0" time="16.379" errors="0">
+<testcase name="Homepage › homepage loads successfully" classname="critical/homepage.spec.ts" time="4.816">
+</testcase>
+<testcase name="Homepage › hero section is visible" classname="critical/homepage.spec.ts" time="5.267">
+</testcase>
+<testcase name="Homepage › navigation links are present" classname="critical/homepage.spec.ts" time="4.209">
+</testcase>
+<testcase name="Homepage › create button navigates to creation hub" classname="critical/homepage.spec.ts" time="1.041">
+</testcase>
+<testcase name="Homepage › category cards are displayed" classname="critical/homepage.spec.ts" time="1.046">
+</testcase>
+</testsuite>
+</testsuites>

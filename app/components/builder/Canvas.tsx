@@ -11,12 +11,65 @@ import {
   useEffect,
   useCallback,
   type MouseEvent,
+  type TouchEvent,
   type KeyboardEvent,
   type DragEvent,
 } from 'react';
 import { cn } from '~/lib/utils';
 import { Button } from '~/components/ui/button';
 import type { DesignElement, PrintArea, Position } from './types';
+
+/**
+ * Touch gesture state for tracking multi-touch interactions
+ */
+interface TouchGestureState {
+  /** Initial distance between two touch points (for pinch) */
+  initialDistance: number;
+  /** Initial angle between two touch points (for rotation) */
+  initialAngle: number;
+  /** Initial scale when gesture started */
+  initialScale: number;
+  /** Initial rotation when gesture started */
+  initialRotation: number;
+  /** Centre point of the gesture */
+  centre: Position;
+}
+
+/**
+ * Touch point interface for cross-compatibility
+ */
+interface TouchPoint {
+  clientX: number;
+  clientY: number;
+}
+
+/**
+ * Calculate distance between two touch points
+ */
+function getTouchDistance(touch1: TouchPoint, touch2: TouchPoint): number {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * Calculate angle between two touch points (in degrees)
+ */
+function getTouchAngle(touch1: TouchPoint, touch2: TouchPoint): number {
+  const dx = touch2.clientX - touch1.clientX;
+  const dy = touch2.clientY - touch1.clientY;
+  return Math.atan2(dy, dx) * (180 / Math.PI);
+}
+
+/**
+ * Get centre point between two touches
+ */
+function getTouchCentre(touch1: TouchPoint, touch2: TouchPoint): Position {
+  return {
+    x: (touch1.clientX + touch2.clientX) / 2,
+    y: (touch1.clientY + touch2.clientY) / 2,
+  };
+}
 
 export interface CanvasProps {
   /** Product type (mug, apparel, print, storybook) */
@@ -74,6 +127,11 @@ export function Canvas({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<Position | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+
+  // Touch gesture state
+  const [isTouching, setIsTouching] = useState(false);
+  const [touchGesture, setTouchGesture] = useState<TouchGestureState | null>(null);
+  const touchStartRef = useRef<Position | null>(null);
 
   // Selected element
   const selectedElement = elements.find((e) => e.isSelected);
@@ -151,6 +209,138 @@ export function Canvas({
   // Handle canvas click (deselect)
   const handleCanvasClick = (e: MouseEvent) => {
     if (e.target === canvasRef.current) {
+      onElementSelect(null);
+    }
+  };
+
+  // ============================================
+  // TOUCH EVENT HANDLERS (Mobile Support)
+  // ============================================
+
+  /**
+   * Handle touch start on an element
+   */
+  const handleElementTouchStart = useCallback(
+    (e: TouchEvent, element: DesignElement) => {
+      e.stopPropagation();
+
+      // Prevent default to avoid browser gestures interfering
+      if (e.touches.length >= 2) {
+        e.preventDefault();
+      }
+
+      onElementSelect(element.id);
+
+      if (e.touches.length === 1) {
+        // Single touch - drag mode
+        const touch = e.touches[0];
+        setIsTouching(true);
+        touchStartRef.current = {
+          x: touch.clientX - element.transform.position.x * canvasScale * zoom,
+          y: touch.clientY - element.transform.position.y * canvasScale * zoom,
+        };
+      } else if (e.touches.length === 2 && element.isSelected) {
+        // Two-finger gesture - pinch/rotate mode
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+
+        setTouchGesture({
+          initialDistance: getTouchDistance(touch1, touch2),
+          initialAngle: getTouchAngle(touch1, touch2),
+          initialScale: element.transform.scale,
+          initialRotation: element.transform.rotation,
+          centre: getTouchCentre(touch1, touch2),
+        });
+      }
+    },
+    [onElementSelect, canvasScale, zoom]
+  );
+
+  /**
+   * Handle touch move - drag, pinch, or rotate
+   */
+  useEffect(() => {
+    if (!selectedElement) return;
+
+    const handleTouchMove = (e: globalThis.TouchEvent) => {
+      if (e.touches.length === 1 && isTouching && touchStartRef.current) {
+        // Single touch - drag
+        e.preventDefault();
+        const touch = e.touches[0];
+        const newX = (touch.clientX - touchStartRef.current.x) / (canvasScale * zoom);
+        const newY = (touch.clientY - touchStartRef.current.y) / (canvasScale * zoom);
+
+        onElementUpdate({
+          ...selectedElement,
+          transform: {
+            ...selectedElement.transform,
+            position: { x: newX, y: newY },
+          },
+        });
+      } else if (e.touches.length === 2 && touchGesture) {
+        // Two-finger gesture - pinch and rotate
+        e.preventDefault();
+        const touch1 = e.touches[0];
+        const touch2 = e.touches[1];
+
+        const currentDistance = getTouchDistance(touch1, touch2);
+        const currentAngle = getTouchAngle(touch1, touch2);
+
+        // Calculate scale change
+        const scaleRatio = currentDistance / touchGesture.initialDistance;
+        const newScale = Math.max(0.1, Math.min(3, touchGesture.initialScale * scaleRatio));
+
+        // Calculate rotation change
+        const angleDelta = currentAngle - touchGesture.initialAngle;
+        const newRotation = touchGesture.initialRotation + angleDelta;
+
+        onElementUpdate({
+          ...selectedElement,
+          transform: {
+            ...selectedElement.transform,
+            scale: newScale,
+            rotation: newRotation,
+          },
+        });
+      }
+    };
+
+    const handleTouchEnd = (e: globalThis.TouchEvent) => {
+      if (e.touches.length === 0) {
+        // All fingers lifted
+        setIsTouching(false);
+        touchStartRef.current = null;
+        setTouchGesture(null);
+      } else if (e.touches.length === 1 && touchGesture) {
+        // Went from 2 fingers to 1 - switch to drag mode
+        setTouchGesture(null);
+        const touch = e.touches[0];
+        touchStartRef.current = {
+          x: touch.clientX - selectedElement.transform.position.x * canvasScale * zoom,
+          y: touch.clientY - selectedElement.transform.position.y * canvasScale * zoom,
+        };
+        setIsTouching(true);
+      }
+    };
+
+    if (isTouching || touchGesture) {
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+      document.addEventListener('touchcancel', handleTouchEnd);
+
+      return () => {
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+        document.removeEventListener('touchcancel', handleTouchEnd);
+      };
+    }
+  }, [isTouching, touchGesture, selectedElement, canvasScale, zoom, onElementUpdate]);
+
+  /**
+   * Handle touch on canvas (deselect)
+   */
+  const handleCanvasTouchStart = (e: TouchEvent) => {
+    if (e.target === canvasRef.current && e.touches.length === 1) {
       onElementSelect(null);
     }
   };
@@ -287,6 +477,7 @@ export function Canvas({
         aria-label={`Design canvas for ${productType}`}
         tabIndex={0}
         onClick={handleCanvasClick}
+        onTouchStart={handleCanvasTouchStart}
         onKeyDown={handleKeyDown}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -298,6 +489,8 @@ export function Canvas({
         )}
         style={{
           minHeight: '400px',
+          // Prevent browser gestures from interfering with canvas touch interactions
+          touchAction: 'none',
         }}
       >
         {/* Print Area */}
@@ -331,6 +524,7 @@ export function Canvas({
               canvasScale={canvasScale}
               zoom={zoom}
               onMouseDown={(e) => handleElementMouseDown(e, element)}
+              onTouchStart={(e) => handleElementTouchStart(e, element)}
             />
           ))}
 
@@ -407,6 +601,7 @@ interface DesignElementComponentProps {
   canvasScale: number;
   zoom: number;
   onMouseDown: (e: MouseEvent) => void;
+  onTouchStart: (e: TouchEvent) => void;
 }
 
 function DesignElementComponent({
@@ -414,6 +609,7 @@ function DesignElementComponent({
   canvasScale,
   zoom,
   onMouseDown,
+  onTouchStart,
 }: DesignElementComponentProps) {
   const { transform, imageUrl, imageWidth, imageHeight, isSelected } = element;
   const scale = canvasScale * zoom;
@@ -437,11 +633,12 @@ function DesignElementComponent({
         transform: `rotate(${transform.rotation}deg)`,
       }}
       onMouseDown={onMouseDown}
+      onTouchStart={onTouchStart}
     >
       <img
         src={imageUrl}
         alt="Design"
-        className="h-full w-full object-contain"
+        className="h-full w-full object-contain pointer-events-none"
         draggable={false}
       />
 
