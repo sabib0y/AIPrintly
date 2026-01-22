@@ -4,6 +4,100 @@ Chronological engineering log for AIPrintly Phase 1 development.
 
 ---
 
+## 2026-01-22 — Wave III Manual Flow Testing & Bug Fixes
+
+### Overview
+Started Wave III manual flow testing. Fixed several critical bugs blocking the Upload → Build flow.
+
+### What Was Done
+
+**Session 1 — Database Setup & Route Registration:**
+- Configured Supabase PostgreSQL via session pooler (IPv4 compatible)
+- Pushed Prisma schema to database
+- Seeded 11 products with 42 variants (mugs, apparel, prints, storybooks)
+- Fixed `app/routes.ts` — only 8 of 30+ routes were registered
+- Fixed `orders.$orderId.tsx` — React Router v7 compatibility
+
+**Session 2 — Flow Testing & Bug Fixes:**
+
+1. **R2 Storage URL Fix:**
+   - Upload preview wasn't rendering — `R2_PUBLIC_URL` was pointing to wrong port
+   - User updated `.env` with correct Cloudflare R2 public URL
+   - Upload preview now works ✅
+
+2. **Server-Only Module Error:**
+   - Builder page crashed with "Server-only module referenced by client"
+   - `build.$productType.tsx` was importing from `~/services/products.server` at top level
+   - Created `app/lib/product-types.ts` for shared type definitions
+   - Changed to dynamic import inside loader for server functions
+   - Builder page now loads ✅
+
+3. **Auto-Select Variant Fix (in progress):**
+   - "Add to Basket" button was disabled because no variant was auto-selected
+   - Added `useEffect` to auto-select first available variant when product loads
+   - Fix applied but not yet tested
+
+### Files Created
+- `app/lib/product-types.ts` — Shared product type definitions
+
+### Files Modified
+- `app/services/products.server.ts` — Re-export types from shared file
+- `app/routes/build.$productType.tsx` — Dynamic import for server module, auto-select variant
+
+### Flow Testing Progress
+- [x] Landing page → Create hub
+- [x] Upload image → Success with preview
+- [x] Select product type → Continue to Builder
+- [x] Builder page loads with design on canvas
+- [ ] Add to Basket (variant auto-select fix in progress)
+- [ ] Cart page
+- [ ] Checkout flow
+
+### Status
+- Upload → Build flow: 🟡 Mostly working, variant selection fix needs testing
+- Next: Test variant auto-select fix, continue to Cart → Checkout
+
+---
+
+## 2026-01-21 — Roadmap Reprioritisation: Human Polish First
+
+### Overview
+Reprioritised the roadmap to focus on getting the app to a working, polished state before comprehensive E2E testing and performance optimisation.
+
+### Priority Change
+
+**Before**: Wave II (E2E) → Wave III (Human Polish) → Verification
+**After**: Wave III (Human Polish) → Wave II (E2E) → Verification
+
+### Rationale
+1. Users experience the app through manual flows first — this should work smoothly
+2. Human validation catches UX issues that automated tests miss
+3. E2E tests are more valuable when testing a stable, working app
+4. Performance optimisation can happen after core functionality is verified
+
+### Files Modified
+- `planning/phase1/10-roadmap.md` — Updated status, reordered waves, revised timeline and dependencies
+- `planning/phase1/progress-log.md` — Added this entry
+- `planning/phase1/e2e-issues-tracker.md` — Updated status to reflect deferral
+- `planning/phase1/13-e2e-testing.md` — Added deferral note
+
+### New Priority Order
+1. **Database Setup** — Connect E2E tests to real database for full flow validation
+2. **Wave III: Human Polish** — Manual walkthrough, UI refinements, copy/content review
+3. **Wave II: E2E Testing** — Fix remaining test issues, achieve full coverage
+4. **E.3: Performance** — Lighthouse audit, optimisation (deferred)
+
+### Next Steps
+- [ ] Set up database connection for E2E tests
+- [ ] Begin Wave III: Manual flow walkthroughs
+- [ ] UI/UX review and refinements
+- [ ] Copy and content polish
+
+### Planning Document Created
+- `planning/phase1/wave-iii-todo.md` — Comprehensive todo list for this phase
+
+---
+
 ## 2026-01-21 — Checkout Auth Requirement & E2E Page Object Fixes
 
 ### Overview

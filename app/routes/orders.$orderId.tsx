@@ -9,10 +9,11 @@
  * - /orders/{orderId} - Authenticated user (owner only)
  */
 
-import { json, redirect } from 'react-router'
+import { data, redirect } from 'react-router'
 import type { Route } from './+types/orders.$orderId'
 import { getOrderById, getOrderByTrackingToken } from '~/services/orders.server'
-import { getSession, getSessionUser } from '~/services/session.server'
+import { getSession, getUserIdFromSession } from '~/services/session.server'
+import { prisma } from '~/services/prisma.server'
 import {
   Card,
   CardContent,
@@ -51,20 +52,23 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     const order = await getOrderByTrackingToken(trackingToken)
 
     if (!order || order.id !== orderId) {
-      throw json({ error: 'Order not found' }, { status: 404 })
+      throw data({ error: 'Order not found' }, { status: 404 })
     }
 
-    return json({ order, isAnonymous: true })
+    return data({ order, isAnonymous: true })
   }
 
   // Otherwise, require authentication and ownership
   const session = await getSession(request)
-  const user = await getSessionUser(request)
+  const userId = await getUserIdFromSession(request)
+
+  // Get user if logged in
+  const user = userId ? await prisma.user.findUnique({ where: { id: userId } }) : null
 
   const order = await getOrderById(orderId)
 
   if (!order) {
-    throw json({ error: 'Order not found' }, { status: 404 })
+    throw data({ error: 'Order not found' }, { status: 404 })
   }
 
   // Check authorisation: must be owner (user or session)
@@ -73,10 +77,10 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     (!user && order.sessionId === session.id)
 
   if (!isOwner) {
-    throw json({ error: 'Access denied' }, { status: 403 })
+    throw data({ error: 'Access denied' }, { status: 403 })
   }
 
-  return json({ order, isAnonymous: false })
+  return data({ order, isAnonymous: false })
 }
 
 /**

@@ -25,7 +25,7 @@ Each layer has explicit exit criteria.
 |-------|--------|
 | 1. Product Definition | ✅ Complete |
 | 2. Build (Workstreams A-E) | 🟡 In Progress (Wave 0 + A/B/C + Wave I + D done, E partial) |
-| 3. Verification (E2E + QA) | 🟡 In Progress (E2E infrastructure done) |
+| 3. Verification (E2E + QA) | 🔄 Reordered (Human Polish first, then E2E) |
 | 4. Deployment | 🔜 Not started |
 
 **Overall Progress**: ~80% (Wave 0 + Workstreams A, B, C + Wave I + D complete, E and Wave II in progress)
@@ -41,8 +41,17 @@ Each layer has explicit exit criteria.
 | Wave I — Integration | ✅ Complete | — |
 | D — Fulfilment | ✅ Complete | 35 passing |
 | E — Polish & QA | 🟡 In Progress (E.1, E.2, E.4 done) | — |
-| Wave II — E2E Testing | 🟡 In Progress (infra done, tests need fixes) | 8/20 passing |
-| Wave III — Human Polish | 🔜 Not started | — |
+| **Wave III — Human Polish** | 🔜 **NEXT** (reprioritised) | — |
+| Wave II — E2E Testing | ⏸️ Deferred (after Human Polish) | 8/20 passing |
+
+### Revised Priority Order (2026-01-21)
+
+The roadmap has been adjusted to prioritise getting the app to a working, polished state before cleaning up E2E tests:
+
+1. **Database Setup** — Connect E2E tests to real database for full flow validation
+2. **Wave III: Human Polish** — Manual walkthrough, UI refinements, copy/content review
+3. **Wave II: E2E Testing** — Fix remaining test issues, achieve full coverage
+4. **E.3: Performance** — Lighthouse audit, optimisation (deferred)
 
 ---
 
@@ -571,11 +580,33 @@ Mobile, accessibility, performance, security.
 
 ---
 
-## Wave II — E2E Testing
+## Wave III — Human Validation & Polish ← **NOW PRIORITISED FIRST**
 
-**Dependencies**: Workstreams D, E complete
+**Dependencies**: Wave I complete (basic flows working)
+
+**Owner**: Product owner + Developer
+
+**Status**: 🔜 **NEXT** — Reprioritised to run before Wave II
+
+Human walkthrough of the complete application to identify UI/UX issues, refine copy, and polish the experience. This ensures the app works end-to-end before investing in comprehensive E2E test coverage.
+
+### Rationale for Reordering
+
+Getting the app to a working, polished state takes priority over comprehensive test automation:
+1. Users will experience the app through manual flows first
+2. Human validation catches UX issues that automated tests miss
+3. E2E tests are more valuable when testing a stable, working app
+4. Performance optimisation can happen after core functionality is verified
+
+---
+
+## Wave II — E2E Testing ← **DEFERRED (after Human Polish)**
+
+**Dependencies**: Wave III complete (app working end-to-end)
 
 **Owner**: Full team
+
+**Status**: ⏸️ Deferred — Infrastructure complete, tests need database connection and fixes
 
 **Specification**: See `13-e2e-testing.md` for full details
 
@@ -648,13 +679,9 @@ Must pass before any release:
 
 ---
 
-## Wave III — Human Validation & Polish
+## Wave III Detail — Human Validation & Polish (Detailed Tasks)
 
-**Dependencies**: Wave II complete
-
-**Owner**: Product owner + Developer
-
-Human walkthrough of the complete application to identify UI/UX issues, refine copy, and polish the experience before verification.
+**Note**: This section provides the detailed task breakdown for Wave III, which has been reprioritised to run BEFORE Wave II.
 
 ### Tasks
 
@@ -787,55 +814,61 @@ Production deployment and monitoring setup.
 
 ---
 
-# Parallel Execution Timeline
+# Parallel Execution Timeline (Revised 2026-01-21)
 
 ```
 Week 1-2:   ████████████████████████████████████████████
-            Wave 0 — Foundation (ALL TEAM)
+            Wave 0 — Foundation (ALL TEAM)                    ✅ COMPLETE
 
 Week 3-5:   ████████████████  ████████████████  ████████████████
-            Workstream A      Workstream B      Workstream C
+            Workstream A      Workstream B      Workstream C   ✅ COMPLETE
             Asset Pipeline    Product Builder   Commerce Stack
             (Dev 1)           (Dev 2)           (Dev 3)
 
 Week 6:     ████████████████████████████████████████████
-            Wave I — Integration (ALL TEAM)
+            Wave I — Integration (ALL TEAM)                    ✅ COMPLETE
 
 Week 7-8:   ████████████████████████  ████████████████████████
-            Workstream D              Workstream E
-            Fulfilment                Polish & QA
+            Workstream D              Workstream E             ✅ D COMPLETE
+            Fulfilment                Polish & QA              🟡 E PARTIAL
             (Dev 1 + Dev 3)           (Dev 2 + QA)
 
 Week 9:     ████████████████████████████████████████████
-            Wave II — E2E Testing (ALL TEAM)
-            Playwright tests, cross-browser, mobile
+            Wave III — Human Validation & Polish               ← NOW
+            Manual flows, UI polish, copy review, edge cases
 
 Week 10:    ████████████████████████████████████████████
+            Wave II — E2E Testing (ALL TEAM)                   ← NEXT
+            Fix tests, database connection, full coverage
+
+Week 11:    ████████████████████████████████████████████
             Layer 3 — Verification (ALL TEAM)
             UAT, bug fixes, security audit
 
-Week 11:    ████████████████████████████████████████████
+Week 12:    ████████████████████████████████████████████
             Layer 4 — Deployment (ALL TEAM)
             Production setup, monitoring, launch
 ```
 
 ---
 
-# Workstream Dependencies Matrix
+# Workstream Dependencies Matrix (Revised 2026-01-21)
 
-| Workstream | Depends On | Blocks |
-|------------|------------|--------|
-| Wave 0 | — | A, B, C |
-| A (Assets) | Wave 0 | Wave I |
-| B (Builder) | Wave 0 | Wave I |
-| C (Commerce) | Wave 0 | Wave I |
-| Wave I | A, B, C | D, E |
-| D (Fulfilment) | Wave I | Wave II |
-| E (Polish) | Wave I | Wave II |
-| Wave II (E2E) | D, E | Wave III |
-| Wave III (Human Polish) | Wave II | Layer 3 |
-| Layer 3 (Verification) | Wave III | Layer 4 |
-| Layer 4 (Deployment) | Layer 3 | — |
+| Workstream | Depends On | Blocks | Status |
+|------------|------------|--------|--------|
+| Wave 0 | — | A, B, C | ✅ Complete |
+| A (Assets) | Wave 0 | Wave I | ✅ Complete |
+| B (Builder) | Wave 0 | Wave I | ✅ Complete |
+| C (Commerce) | Wave 0 | Wave I | ✅ Complete |
+| Wave I | A, B, C | D, E | ✅ Complete |
+| D (Fulfilment) | Wave I | Wave III | ✅ Complete |
+| E (Polish) | Wave I | Wave III | 🟡 Partial |
+| **Wave III (Human Polish)** | D, E (partial) | Wave II | 🔜 **NEXT** |
+| Wave II (E2E) | Wave III | Layer 3 | ⏸️ Deferred |
+| Layer 3 (Verification) | Wave II | Layer 4 | 🔜 Pending |
+| Layer 4 (Deployment) | Layer 3 | — | 🔜 Pending |
+
+**Key Change**: Wave III now runs BEFORE Wave II. This ensures the app is working end-to-end and polished before investing in comprehensive E2E test coverage.
 
 ---
 
@@ -1013,4 +1046,24 @@ SENTRY_DSN=xxx
 
 ---
 
-*Last updated: 2026-01-20*
+*Last updated: 2026-01-21*
+
+---
+
+# Revision History
+
+## 2026-01-21 — Priority Reorder
+
+**Change**: Wave III (Human Validation & Polish) now runs BEFORE Wave II (E2E Testing)
+
+**Rationale**:
+1. Getting the app to a working, polished state is the immediate priority
+2. Human validation catches UX issues that automated tests miss
+3. E2E tests are more valuable when testing a stable, working app
+4. Performance optimisation (E.3 Lighthouse) can happen after core functionality is verified
+
+**New Priority Order**:
+1. Database Setup — Connect for full flow validation
+2. Wave III: Human Polish — Manual walkthrough, UI, copy
+3. Wave II: E2E Testing — Fix tests, achieve coverage
+4. E.3: Performance — Lighthouse audit (deferred)

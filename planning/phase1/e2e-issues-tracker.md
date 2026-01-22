@@ -4,6 +4,18 @@ Issues identified during E2E test implementation that need fixing before full te
 
 ---
 
+## Status: ⏸️ DEFERRED (2026-01-21)
+
+**Wave II (E2E Testing) has been deferred** to run AFTER Wave III (Human Validation & Polish).
+
+**Rationale**: Getting the app to a working, polished state takes priority over comprehensive test automation. E2E tests are more valuable when testing a stable, working app.
+
+**Current E2E Status**: Infrastructure complete, 8/20 tests passing, remaining issues documented below.
+
+**Resume After**: Wave III complete (manual flows verified, UI polished, copy reviewed)
+
+---
+
 ## Priority: High (Blocking Critical Path Tests)
 
 ### 1. Checkout Not Requiring Authentication — FIXED ✅
@@ -107,3 +119,12 @@ Critical:     0/?  (TypeScript errors)
 ---
 
 *Last updated: 2026-01-21*
+
+---
+
+## Revision History
+
+### 2026-01-21 — Deferred Status Added
+- Wave II (E2E Testing) deferred to run after Wave III (Human Polish)
+- Focus shifts to getting app working end-to-end manually first
+- E2E issues will be addressed after human validation complete

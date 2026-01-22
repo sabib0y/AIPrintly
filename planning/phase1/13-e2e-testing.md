@@ -4,6 +4,24 @@ End-to-end testing strategy for AIPrintly MVP using Playwright.
 
 ---
 
+## Status: ⏸️ DEFERRED (2026-01-21)
+
+**Wave II (E2E Testing) has been reprioritised** to run AFTER Wave III (Human Validation & Polish).
+
+| Item | Status |
+|------|--------|
+| Infrastructure | ✅ Complete (Playwright config, page objects, fixtures) |
+| Test IDs | ✅ Complete (all components have data-testid attributes) |
+| Page Objects | ✅ Complete (8 page objects created) |
+| Test Coverage | 🟡 Partial (8/20 tests passing) |
+| Database Connection | 🔜 Pending (needed for full suite) |
+
+**Resume After**: Wave III complete (manual flows verified, UI polished)
+
+**Rationale**: Getting the app to a working, polished state takes priority. E2E tests are more valuable when testing a stable, working application.
+
+---
+
 ## Overview
 
 E2E tests validate complete user journeys through the application, ensuring all components work together correctly. These tests run against a real browser and interact with the application as a user would.
@@ -1331,4 +1349,13 @@ Before Phase 1 release:
 
 ---
 
-*Last updated: 2026-01-20*
+*Last updated: 2026-01-21*
+
+---
+
+## Revision History
+
+### 2026-01-21 — Deferred Status Added
+- Wave II (E2E Testing) reprioritised to run after Wave III (Human Polish)
+- Added status table showing infrastructure complete, coverage partial
+- Focus shifts to manual validation first, then comprehensive E2E coverage

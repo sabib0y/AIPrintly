@@ -39,11 +39,7 @@ import {
   type QualityAssessment,
   assessQuality,
 } from '~/components/builder/types';
-import {
-  getProductsByCategory,
-  getProductVariants,
-  type ProductWithVariants,
-} from '~/services/products.server';
+import type { ProductWithVariants } from '~/lib/product-types';
 
 /**
  * Meta function for dynamic page titles
@@ -98,6 +94,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       error: 'Invalid product type',
     });
   }
+
+  // Dynamic import to avoid server-only module being bundled for client
+  const { getProductsByCategory } = await import('~/services/products.server');
 
   const category = PRODUCT_TYPE_MAP[productType];
   const result = await getProductsByCategory(category, {
@@ -196,6 +195,18 @@ export default function BuilderPage() {
   // Get selected product and variant
   const selectedProduct = products.find((p) => p.id === selectedProductId);
   const selectedVariant = selectedProduct?.variants.find((v) => v.id === selectedVariantId);
+
+  // Auto-select first available variant when product changes and no variant is selected
+  useEffect(() => {
+    if (selectedProduct && !selectedVariantId) {
+      const firstAvailableVariant = selectedProduct.variants.find(
+        (v) => v.stockStatus !== 'OUT_OF_STOCK'
+      );
+      if (firstAvailableVariant) {
+        setSelectedVariantId(firstAvailableVariant.id);
+      }
+    }
+  }, [selectedProduct, selectedVariantId]);
 
   // Get selected element
   const selectedElement = elements.find((e) => e.id === selectedElementId);
