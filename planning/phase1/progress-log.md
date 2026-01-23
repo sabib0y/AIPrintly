@@ -4,10 +4,141 @@ Chronological engineering log for AIPrintly Phase 1 development.
 
 ---
 
+## 2026-01-23 — Wave P Complete: Privacy, Compliance & MVP Scope
+
+### Overview
+Completed Wave P (Privacy & Compliance). Implemented GDPR consent flows, avatar selector, privacy policy, credit packs, and AI generation safeguards. 267 new tests added.
+
+### What Was Done
+
+**P.2 — Photo Upload Consent Flow:**
+- `PhotoConsentForm` component with GDPR-compliant checkboxes
+- Consent required before upload (rights + child guardian confirmation)
+- Consent stored in asset metadata with timestamp
+- "Delete photo" option after upload
+
+**P.3 — Avatar Selector:**
+- `AvatarSelector` + `AvatarPreview` components
+- Gender, skin tone (6 options), hair colour (8 options), hair style
+- SVG-based live preview
+- Privacy-friendly alternative to photo upload
+
+**P.4 — Privacy Policy Page:**
+- Comprehensive `/privacy` route with 10 sections
+- Prominent "Children's Data" section with ICO compliance info
+- GDPR rights, data retention table, third-party links
+- Table of contents with anchor navigation
+
+**P.5 — MVP Scope Refinement:**
+- Hidden mugs/apparel from UI (prints + storybooks only)
+- Registered user credits: 10 → 25
+- Credit pack purchase flow (100/250/700 credits via Stripe)
+- `CreditPackSelector` component + purchase API
+
+**P.6 — AI Generation Safeguards:**
+- Low-res previews (1024×1024) default, print-quality (2048×2048) after payment
+- Asset proxy endpoint blocks direct downloads
+- Watermark service for storybook previews (Sharp-based diagonal watermark)
+- Free preview tracking for storybooks
+
+### Files Created
+- `app/components/upload/PhotoConsentForm.tsx`
+- `app/components/ui/checkbox.tsx`
+- `app/components/storybook/AvatarSelector.tsx`
+- `app/components/storybook/AvatarPreview.tsx`
+- `app/components/credits/CreditPackSelector.tsx`
+- `app/routes/privacy.tsx`
+- `app/routes/api.credits.purchase.ts`
+- `app/routes/credits.purchase.tsx`
+- `app/routes/credits.success.tsx`
+- `app/routes/api.assets.$id.image.ts`
+- `app/services/watermark.server.ts`
+- `app/services/storybook-preview.server.ts`
+- `app/services/ai/print-quality.server.ts`
+- `app/lib/credit-packs.ts`
+
+### Test Results
+- 267 new tests (all passing)
+- P.6 tests: 97 passing
+- Consent/Privacy tests: 97 passing
+- Avatar tests: 53 passing
+- Credit pack tests: 20 passing
+
+### Status
+- Wave P: ✅ Complete (code done, P.1 UK/EU provider awaiting response)
+- Email drafted to Stability AI Enterprise re: UK/EU data residency
+- Using Replicate for MVP development in the meantime
+- Next: Wave III (Human Polish) or Wave II (E2E Testing)
+
+---
+
+## 2026-01-22 — Business Model & Pricing Strategy Research
+
+### Overview
+Comprehensive business planning session. Researched AI API pricing, POD margins, competitor pricing, and ICO Children's Code compliance for photo uploads.
+
+### Key Decisions Made
+
+**MVP Scope Refined:**
+- **Products**: Storybooks + Prints only (no apparel for MVP)
+- Reduces complexity, focuses on highest-margin products
+
+**AI Generation Pricing:**
+- 20-30 free credits (tighter than original 50)
+- Credit packs: 100 for £4.99, 250 for £9.99, 700 for £19.99
+- Target 50% margin on AI costs
+- Low-res previews (1024×1024), print-quality (2048×2048) only after payment
+- No direct downloads until purchase
+
+**Product Pricing:**
+- Storybooks: £27.99 (hardcover), £7.99 (PDF only) — matches Wonderbly
+- Prints/Posters: £9.99-£34.99 (40-70% margins)
+- Shipping: £3.99 flat, free over £30
+
+**Storybook Features:**
+- 1-3 themes for MVP (Adventure, Magic, Bedtime)
+- Simple customisation: child's name, appearance, dedication
+- One format: hardcover only (+ optional PDF)
+- One size: standard 8×8" or 8×10"
+- 1 free storybook preview (watermarked), then credits for more
+
+**Child Photo Upload (GDPR/ICO Compliance):**
+- Photo feature included in MVP with full consent flow
+- 30-day retention, auto-delete
+- Explicit parental consent required
+- "Never used for AI training" commitment
+- Avatar selector as privacy-friendly alternative
+- Need DPA from Replicate before launch
+
+### Research Files Created
+- `planning/research/ai-generation-api-research-prompt.md`
+- `planning/research/findings.txt` (AI API comparison)
+- `planning/research/business-model-research-prompt.md`
+- `planning/research/business-research-findings.txt` (competitor/pricing analysis)
+
+### ICO Children's Code Findings
+- Code partially applies (parents are users, children are data subjects)
+- ~8-9 of 15 standards relevant (data handling, not child-UX standards)
+- Key requirements: DPIA, explicit consent, data minimisation, transparency
+- Replicate's privacy policy needs review — they state "no children's data" but we'd be sending it
+
+### Phase 2 Deferred
+- Bundles & upsells (e.g., "Add matching mug for £7.99")
+- Gift packaging (requires fulfilment provider research)
+- Subscriptions (credits simpler for MVP)
+
+### Status
+- Business model: ✅ Defined
+- Next: Research Blurb API/pricing for book fulfilment
+- Next: Contact Replicate for DPA
+- Next: Continue Cart → Checkout flow testing
+
+---
+
 ## 2026-01-22 — Wave III Manual Flow Testing & Bug Fixes
 
 ### Overview
-Started Wave III manual flow testing. Fixed several critical bugs blocking the Upload → Build flow.
+Wave III manual flow testing. Fixed critical bugs in Upload and AI Generation flows. Both paths now working end-to-end to builder.
 
 ### What Was Done
 
@@ -18,7 +149,7 @@ Started Wave III manual flow testing. Fixed several critical bugs blocking the U
 - Fixed `app/routes.ts` — only 8 of 30+ routes were registered
 - Fixed `orders.$orderId.tsx` — React Router v7 compatibility
 
-**Session 2 — Flow Testing & Bug Fixes:**
+**Session 2 — Upload Flow Fixes:**
 
 1. **R2 Storage URL Fix:**
    - Upload preview wasn't rendering — `R2_PUBLIC_URL` was pointing to wrong port
@@ -32,30 +163,54 @@ Started Wave III manual flow testing. Fixed several critical bugs blocking the U
    - Changed to dynamic import inside loader for server functions
    - Builder page now loads ✅
 
-3. **Auto-Select Variant Fix (in progress):**
+3. **Auto-Select Variant Fix:**
    - "Add to Basket" button was disabled because no variant was auto-selected
    - Added `useEffect` to auto-select first available variant when product loads
-   - Fix applied but not yet tested
+   - Tested and confirmed working ✅
+
+**Session 3 — AI Generation Flow Fixes:**
+
+4. **ES Module Fix in AI Service:**
+   - AI generation failed with "require is not defined"
+   - `app/services/ai/index.ts` was using CommonJS `require()` inside ES module functions
+   - Fixed by importing provider functions separately for internal use
+   - AI service now works ✅
+
+5. **Replicate API Token:**
+   - User added valid Replicate API token to `.env`
+   - AI image generation tested and working ✅
+   - Generated pop art golden retriever image successfully
 
 ### Files Created
 - `app/lib/product-types.ts` — Shared product type definitions
+- `planning/research/ai-generation-api-research-prompt.md` — Prompt for researching AI APIs
 
 ### Files Modified
 - `app/services/products.server.ts` — Re-export types from shared file
 - `app/routes/build.$productType.tsx` — Dynamic import for server module, auto-select variant
+- `app/services/ai/index.ts` — Fixed ES module imports for provider functions
 
 ### Flow Testing Progress
 - [x] Landing page → Create hub
 - [x] Upload image → Success with preview
+- [x] AI Generate image → Success (Replicate SDXL)
 - [x] Select product type → Continue to Builder
 - [x] Builder page loads with design on canvas
-- [ ] Add to Basket (variant auto-select fix in progress)
+- [x] Add to Basket button enabled (variant auto-select working)
 - [ ] Cart page
 - [ ] Checkout flow
 
+### API Status
+| API | Status |
+|-----|--------|
+| Cloudflare R2 | ✅ Working |
+| Replicate (SDXL) | ✅ Working |
+| OpenAI (fallback) | ⏸️ Not tested |
+
 ### Status
-- Upload → Build flow: 🟡 Mostly working, variant selection fix needs testing
-- Next: Test variant auto-select fix, continue to Cart → Checkout
+- Upload → Build flow: ✅ Working
+- Generate → Build flow: ✅ Working
+- Next: Test Cart → Checkout flow
 
 ---
 

@@ -388,3 +388,17 @@ export function getRecommendedStorageTier(
     return 'COLD'
   }
 }
+
+/**
+ * Get proxy URL for an asset
+ *
+ * This returns a URL to the asset proxy endpoint instead of direct R2 URL.
+ * The proxy endpoint enforces authentication and prevents direct downloads.
+ *
+ * @param assetId - The asset ID
+ * @returns Proxy URL for the asset
+ */
+export function getProxyUrl(assetId: string): string {
+  const appUrl = process.env.APP_URL || 'http://localhost:5173'
+  return `${appUrl}/api/assets/${assetId}/image`
+}

@@ -19,13 +19,17 @@ import {
   validatePrompt,
   STYLE_PRESETS,
   SUPPORTED_DIMENSIONS,
+  PREVIEW_RESOLUTION,
+  isPrintResolution,
 } from '~/services/ai'
 import { checkCredits, deductCredit, refundCredit } from '~/services/credits.server'
 import {
   uploadFile,
   generateStorageKey,
   calculateRetentionExpiry,
+  getProxyUrl,
 } from '~/services/storage.server'
+import { addWatermark, createWatermarkedMetadata } from '~/services/watermark.server'
 
 /**
  * API response types
@@ -97,10 +101,20 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
     const formData = await request.formData()
     const prompt = formData.get('prompt')?.toString() || ''
     const style = formData.get('style')?.toString() || 'photorealistic'
-    const width = parseInt(formData.get('width')?.toString() || '1024', 10)
-    const height = parseInt(formData.get('height')?.toString() || '1024', 10)
+    const width = parseInt(
+      formData.get('width')?.toString() || String(PREVIEW_RESOLUTION),
+      10
+    )
+    const height = parseInt(
+      formData.get('height')?.toString() || String(PREVIEW_RESOLUTION),
+      10
+    )
     const negativePrompt = formData.get('negativePrompt')?.toString()
     const seed = formData.get('seed')?.toString()
+    const isStorybookPreview = formData.get('isStorybookPreview') === 'true'
+
+    // Check if this is print-quality generation
+    const isPrintQuality = isPrintResolution(width, height)
 
     // Validate prompt
     const promptValidation = validatePrompt(prompt)
@@ -284,19 +298,29 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
     }
 
     // Download and store the generated image
-    const imageBuffer = await downloadImage(result.imageUrl)
+    let imageBuffer = await downloadImage(result.imageUrl)
+
+    // Apply watermark if this is a storybook preview
+    let assetMetadata: Record<string, unknown> = {
+      jobId: job.id,
+      prompt: promptValidation.sanitised!,
+      style,
+      provider: result.provider,
+      resolution: String(Math.max(result.width, result.height)),
+      isPrintQuality: isPrintQuality ? 'true' : 'false',
+    }
+
+    if (isStorybookPreview) {
+      imageBuffer = await addWatermark(imageBuffer)
+      assetMetadata = createWatermarkedMetadata(assetMetadata)
+    }
 
     const storageKey = generateStorageKey('image/png', 'generated')
     const uploadResult = await uploadFile({
       buffer: imageBuffer,
       key: storageKey,
       contentType: 'image/png',
-      metadata: {
-        jobId: job.id,
-        prompt: promptValidation.sanitised!,
-        style,
-        provider: result.provider,
-      },
+      metadata: assetMetadata,
     })
 
     // Calculate retention
@@ -317,10 +341,7 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
         height: result.height,
         fileSize: uploadResult.size,
         metadata: {
-          jobId: job.id,
-          prompt: promptValidation.sanitised,
-          style,
-          provider: result.provider,
+          ...assetMetadata,
           providerJobId: result.providerJobId,
         },
         status: 'TEMPORARY',
@@ -346,12 +367,13 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
       },
     })
 
+    // Return response with proxy URL instead of direct storage URL
     return jsonResponse({
       success: true,
       jobId: job.id,
       asset: {
         id: asset.id,
-        storageUrl: asset.storageUrl,
+        storageUrl: getProxyUrl(asset.id),
         width: asset.width,
         height: asset.height,
       },

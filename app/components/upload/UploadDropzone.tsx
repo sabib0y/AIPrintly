@@ -41,6 +41,14 @@ interface UploadResponse {
 type UploadState = 'idle' | 'dragging' | 'uploading' | 'success' | 'error'
 
 /**
+ * Consent data for photo uploads
+ */
+export interface ConsentData {
+  consentGiven: boolean
+  consentTimestamp: string
+}
+
+/**
  * UploadDropzone props
  */
 export interface UploadDropzoneProps {
@@ -54,6 +62,8 @@ export interface UploadDropzoneProps {
   maxSizeMB?: number
   /** Whether the dropzone is disabled */
   disabled?: boolean
+  /** Consent data (required for GDPR compliance) */
+  consentData?: ConsentData
 }
 
 /**
@@ -79,6 +89,7 @@ export function UploadDropzone({
   className,
   maxSizeMB = 25,
   disabled = false,
+  consentData,
 }: UploadDropzoneProps) {
   const [state, setState] = useState<UploadState>('idle')
   const [currentFile, setCurrentFile] = useState<File | null>(null)
@@ -131,6 +142,12 @@ export function UploadDropzone({
         const formData = new FormData()
         formData.append('file', file)
 
+        // Add consent data if provided
+        if (consentData) {
+          formData.append('consentGiven', consentData.consentGiven.toString())
+          formData.append('consentTimestamp', consentData.consentTimestamp)
+        }
+
         const response = await fetch('/api/assets/upload', {
           method: 'POST',
           body: formData,
@@ -162,7 +179,7 @@ export function UploadDropzone({
         onError?.(errorMessage)
       }
     },
-    [onUploadComplete, onError]
+    [onUploadComplete, onError, consentData]
   )
 
   /**

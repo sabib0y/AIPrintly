@@ -4,12 +4,12 @@
  * Displays products filtered by category with real database data.
  */
 
-import { Link, useLoaderData, useParams, useSearchParams } from 'react-router';
+import { Link, useLoaderData, useParams, useSearchParams, redirect } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { ProductCard } from '~/components/products/ProductCard';
-import { getProductsByCategory, type ProductWithVariants } from '~/services/products.server';
-import { CATEGORY_SLUG_MAP, CATEGORY_TO_SLUG_MAP } from '~/lib/categories';
+import { getProductsByCategory, isMvpCategory, type ProductWithVariants } from '~/services/products.server';
+import { CATEGORY_SLUG_MAP, CATEGORY_TO_SLUG_MAP, MVP_CATEGORY_SLUGS } from '~/lib/categories';
 import type { ProductCategory } from '@prisma/client';
 
 /**
@@ -28,12 +28,12 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 /**
- * Categories for filter navigation
+ * Categories for filter navigation.
+ * MVP scope: Only Prints and Storybooks are shown.
+ * Mugs and apparel are available in the database for future expansion.
  */
 const categories = [
   { name: 'All', href: '/products', slug: '' },
-  { name: 'Mugs', href: '/products/mugs', slug: 'mugs' },
-  { name: 'Apparel', href: '/products/apparel', slug: 'apparel' },
   { name: 'Prints', href: '/products/prints', slug: 'prints' },
   { name: 'Storybooks', href: '/products/storybooks', slug: 'storybooks' },
 ];
@@ -59,12 +59,13 @@ const categoryDisplayNames: Record<string, string> = {
 };
 
 /**
- * Loader function to fetch products by category
+ * Loader function to fetch products by category.
+ * MVP scope: Redirects non-MVP categories (mugs, apparel) to /products.
  */
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { category } = params;
 
-  // Validate category slug
+  // Validate category slug exists
   if (!category || !CATEGORY_SLUG_MAP[category]) {
     // Return empty result for invalid category
     return {
@@ -77,6 +78,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       categorySlug: category ?? '',
       isValidCategory: false,
     };
+  }
+
+  // MVP scope: Redirect non-MVP categories (mugs, apparel) to /products
+  // These categories exist in the database but are hidden in MVP
+  if (!isMvpCategory(category)) {
+    throw redirect('/products');
   }
 
   const url = new URL(request.url);

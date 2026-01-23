@@ -14,24 +14,17 @@ export function meta() {
     {
       name: 'description',
       content:
-        'Transform your ideas into beautiful custom print products using AI. Create personalised mugs, apparel, prints, and storybooks.',
+        'Transform your ideas into beautiful custom print products using AI. Create personalised prints and storybooks.',
     },
   ];
 }
 
+/**
+ * Product categories shown on landing page.
+ * MVP scope: Only Prints and Storybooks are shown.
+ * Mugs and apparel are available in the database for future expansion.
+ */
 const categories = [
-  {
-    title: 'Mugs',
-    description: 'Custom designed mugs perfect for gifts or personal use',
-    icon: '☕',
-    href: '/products/mugs',
-  },
-  {
-    title: 'Apparel',
-    description: 'Unique clothing designs printed on quality garments',
-    icon: '👕',
-    href: '/products/apparel',
-  },
   {
     title: 'Prints',
     description: 'Beautiful art prints for your home or office',
@@ -60,9 +53,8 @@ export default function IndexPage() {
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-300">
-              Use the power of AI to create stunning custom designs for mugs,
-              apparel, art prints, and personalised storybooks. No design skills
-              required.
+              Use the power of AI to create stunning custom designs for art
+              prints and personalised storybooks. No design skills required.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Button asChild size="lg" data-testid="hero-create-button">
@@ -88,7 +80,7 @@ export default function IndexPage() {
             </p>
           </div>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-2 max-w-2xl mx-auto">
             {categories.map((category) => (
               <Link key={category.title} to={category.href} data-testid="category-card">
                 <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">

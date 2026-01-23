@@ -17,14 +17,23 @@ export {
   STYLE_PRESETS,
   DEFAULT_GENERATION_PARAMS,
   SUPPORTED_DIMENSIONS,
+  PREVIEW_RESOLUTION,
+  PRINT_RESOLUTION,
   buildEnhancedPrompt,
   buildNegativePrompt,
   validatePrompt,
   getAvailableStyles,
   getDimensionLabel,
+  getResolutionDimensions,
+  isPreviewResolution,
+  isPrintResolution,
 } from './provider.interface'
 
-// Providers
+// Import providers for internal use
+import { getReplicateProvider as _getReplicateProvider } from './replicate.server'
+import { getOpenAIProvider as _getOpenAIProvider } from './openai.server'
+
+// Re-export providers
 export { ReplicateProvider, getReplicateProvider } from './replicate.server'
 export { OpenAIProvider, getOpenAIProvider } from './openai.server'
 
@@ -46,38 +55,41 @@ export {
   type StoryGenerationResult,
 } from './story-generator.server'
 
+// Print quality generation
+export {
+  generatePrintQuality,
+  batchGeneratePrintQuality,
+} from './print-quality.server'
+
 /**
  * Get the preferred AI provider based on configuration and availability
  *
  * @returns The primary available provider, or null if none available
  */
 export function getPrimaryProvider() {
-  const { getReplicateProvider } = require('./replicate.server')
-  const { getOpenAIProvider } = require('./openai.server')
-
   const preferredProvider = process.env.AI_IMAGE_PROVIDER || 'replicate'
 
   if (preferredProvider === 'replicate') {
-    const replicate = getReplicateProvider()
+    const replicate = _getReplicateProvider()
     if (replicate.isAvailable()) {
       return replicate
     }
   }
 
   if (preferredProvider === 'openai') {
-    const openai = getOpenAIProvider()
+    const openai = _getOpenAIProvider()
     if (openai.isAvailable()) {
       return openai
     }
   }
 
   // Fallback: try any available provider
-  const replicate = getReplicateProvider()
+  const replicate = _getReplicateProvider()
   if (replicate.isAvailable()) {
     return replicate
   }
 
-  const openai = getOpenAIProvider()
+  const openai = _getOpenAIProvider()
   if (openai.isAvailable()) {
     return openai
   }
@@ -92,18 +104,15 @@ export function getPrimaryProvider() {
  * @returns A different available provider, or null
  */
 export function getFallbackProvider(primaryProvider: string) {
-  const { getReplicateProvider } = require('./replicate.server')
-  const { getOpenAIProvider } = require('./openai.server')
-
   if (primaryProvider !== 'replicate') {
-    const replicate = getReplicateProvider()
+    const replicate = _getReplicateProvider()
     if (replicate.isAvailable()) {
       return replicate
     }
   }
 
   if (primaryProvider !== 'openai') {
-    const openai = getOpenAIProvider()
+    const openai = _getOpenAIProvider()
     if (openai.isAvailable()) {
       return openai
     }

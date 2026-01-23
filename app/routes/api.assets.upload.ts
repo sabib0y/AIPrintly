@@ -14,6 +14,7 @@ import {
   uploadFile,
   generateStorageKey,
   calculateRetentionExpiry,
+  getProxyUrl,
 } from '~/services/storage.server'
 import {
   processUploadedImage,
@@ -74,6 +75,8 @@ function jsonResponse(data: UploadResponse, status: number = 200): Response {
  * Form fields:
  * - file: The image file to upload
  * - originalFilename (optional): Original filename if different from file name
+ * - consentGiven (required): Boolean indicating user consent
+ * - consentTimestamp (required): ISO timestamp of when consent was given
  */
 export async function action({ request }: ActionFunctionArgs): Promise<Response> {
   // Only allow POST requests
@@ -112,6 +115,19 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
     // Parse form data
     const formData = await request.formData()
     const file = formData.get('file')
+    const consentGiven = formData.get('consentGiven')
+    const consentTimestamp = formData.get('consentTimestamp')
+
+    // Validate consent
+    if (consentGiven !== 'true' || !consentTimestamp) {
+      return jsonResponse(
+        {
+          success: false,
+          error: 'User consent is required before uploading photos',
+        },
+        400
+      )
+    }
 
     // Validate file presence
     if (!file || !(file instanceof File)) {
@@ -192,7 +208,7 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
     const expiresAt = calculateRetentionExpiry(isAuthenticated, 'upload')
     const retentionDays = isAuthenticated ? 30 : 1
 
-    // Store asset record in database
+    // Store asset record in database with consent metadata
     const asset = await prisma.asset.create({
       data: {
         sessionId,
@@ -212,7 +228,12 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
           originalHeight: validationResult.metadata.height,
           originalFormat: validationResult.metadata.format,
           processedAt: new Date().toISOString(),
-        },
+          consent: {
+            consentGiven: true,
+            consentTimestamp: consentTimestamp.toString(),
+            consentType: 'photo_upload',
+          },
+        } as any,
         status: 'TEMPORARY',
         storageTier: 'HOT',
         expiresAt,
@@ -220,12 +241,12 @@ export async function action({ request }: ActionFunctionArgs): Promise<Response>
       },
     })
 
-    // Build response
+    // Build response with proxy URL instead of direct storage URL
     const response: UploadSuccessResponse = {
       success: true,
       asset: {
         id: asset.id,
-        storageUrl: asset.storageUrl,
+        storageUrl: getProxyUrl(asset.id),
         width: asset.width,
         height: asset.height,
         mimeType: asset.mimeType,

@@ -358,11 +358,23 @@ export function getAvailableStyles(): StyleOption[] {
 }
 
 /**
+ * Preview resolution (low-res for user preview)
+ * Cost: ~25% of print resolution
+ */
+export const PREVIEW_RESOLUTION = 1024
+
+/**
+ * Print resolution (high-res for final products)
+ * Only generated after payment
+ */
+export const PRINT_RESOLUTION = 2048
+
+/**
  * Default generation parameters
  */
 export const DEFAULT_GENERATION_PARAMS = {
-  width: 1024,
-  height: 1024,
+  width: PREVIEW_RESOLUTION,
+  height: PREVIEW_RESOLUTION,
   steps: 30,
   guidanceScale: 7.5,
 }
@@ -373,11 +385,12 @@ export const DEFAULT_GENERATION_PARAMS = {
 export const SUPPORTED_DIMENSIONS = [
   { width: 512, height: 512, label: 'Square (512x512)' },
   { width: 768, height: 768, label: 'Square (768x768)' },
-  { width: 1024, height: 1024, label: 'Square (1024x1024)' },
+  { width: 1024, height: 1024, label: 'Square (1024x1024) - Preview' },
   { width: 768, height: 1024, label: 'Portrait (768x1024)' },
   { width: 1024, height: 768, label: 'Landscape (1024x768)' },
   { width: 512, height: 768, label: 'Portrait (512x768)' },
   { width: 768, height: 512, label: 'Landscape (768x512)' },
+  { width: 2048, height: 2048, label: 'Square (2048x2048) - Print Quality' },
 ] as const
 
 /**
@@ -388,4 +401,58 @@ export function getDimensionLabel(width: number, height: number): string {
     (d) => d.width === width && d.height === height
   )
   return dimension?.label || `${width}x${height}`
+}
+
+/**
+ * Get resolution dimensions for a given resolution type
+ *
+ * @param resolution - Resolution type ('preview' or 'print')
+ * @param aspectRatio - Optional aspect ratio (width/height), defaults to 1 (square)
+ * @returns Dimensions object with width and height
+ */
+export function getResolutionDimensions(
+  resolution: 'preview' | 'print' = 'preview',
+  aspectRatio: number = 1
+): { width: number; height: number } {
+  const maxDimension = resolution === 'print' ? PRINT_RESOLUTION : PREVIEW_RESOLUTION
+
+  if (aspectRatio === 1) {
+    return { width: maxDimension, height: maxDimension }
+  }
+
+  if (aspectRatio > 1) {
+    // Landscape
+    return {
+      width: maxDimension,
+      height: Math.round(maxDimension / aspectRatio),
+    }
+  }
+
+  // Portrait
+  return {
+    width: Math.round(maxDimension * aspectRatio),
+    height: maxDimension,
+  }
+}
+
+/**
+ * Check if dimensions match preview resolution
+ *
+ * @param width - Image width
+ * @param height - Image height
+ * @returns True if dimensions match preview resolution
+ */
+export function isPreviewResolution(width: number, height: number): boolean {
+  return width === PREVIEW_RESOLUTION && height === PREVIEW_RESOLUTION
+}
+
+/**
+ * Check if dimensions match print resolution
+ *
+ * @param width - Image width
+ * @param height - Image height
+ * @returns True if dimensions match print resolution
+ */
+export function isPrintResolution(width: number, height: number): boolean {
+  return width === PRINT_RESOLUTION && height === PRINT_RESOLUTION
 }

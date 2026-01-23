@@ -25,10 +25,10 @@ Each layer has explicit exit criteria.
 |-------|--------|
 | 1. Product Definition | ✅ Complete |
 | 2. Build (Workstreams A-E) | 🟡 In Progress (Wave 0 + A/B/C + Wave I + D done, E partial) |
-| 3. Verification (E2E + QA) | 🔄 Reordered (Human Polish first, then E2E) |
+| 3. Verification (E2E + QA) | 🔄 Reordered (Privacy/Compliance → Human Polish → E2E) |
 | 4. Deployment | 🔜 Not started |
 
-**Overall Progress**: ~80% (Wave 0 + Workstreams A, B, C + Wave I + D complete, E and Wave II in progress)
+**Overall Progress**: ~75% (Wave 0 + Workstreams A, B, C + Wave I + D complete, Privacy/Compliance wave added)
 
 ### Workstream Status
 
@@ -41,17 +41,29 @@ Each layer has explicit exit criteria.
 | Wave I — Integration | ✅ Complete | — |
 | D — Fulfilment | ✅ Complete | 35 passing |
 | E — Polish & QA | 🟡 In Progress (E.1, E.2, E.4 done) | — |
-| **Wave III — Human Polish** | 🔜 **NEXT** (reprioritised) | — |
-| Wave II — E2E Testing | ⏸️ Deferred (after Human Polish) | 8/20 passing |
+| **Wave P — Privacy & Compliance** | 🔜 **NEXT** (new) | — |
+| Wave III — Human Polish | ⏸️ After Wave P | — |
+| Wave II — E2E Testing | ⏸️ After Wave III | 8/20 passing |
 
-### Revised Priority Order (2026-01-21)
+### Revised Priority Order (2026-01-23)
 
-The roadmap has been adjusted to prioritise getting the app to a working, polished state before cleaning up E2E tests:
+The roadmap has been adjusted to include privacy/compliance requirements and MVP scope changes:
 
-1. **Database Setup** — Connect E2E tests to real database for full flow validation
+1. **Wave P: Privacy & Compliance** — UK/EU AI provider, consent flows, data handling, MVP scope refinement
 2. **Wave III: Human Polish** — Manual walkthrough, UI refinements, copy/content review
 3. **Wave II: E2E Testing** — Fix remaining test issues, achieve full coverage
 4. **E.3: Performance** — Lighthouse audit, optimisation (deferred)
+
+### MVP Scope Changes (2026-01-23)
+
+| Change | Details |
+|--------|---------|
+| **Products** | Storybooks + Prints only (apparel hidden for MVP) |
+| **AI Provider** | Switch from Replicate (US) to UK/EU provider (Stability AI Enterprise or self-hosted) |
+| **Photo Upload** | Hybrid approach: Avatar selector OR photo upload with GDPR consent |
+| **Credits** | 20-30 free (reduced from 50), credit pack purchase added |
+| **Storybooks** | 1-3 themes, single format (hardcover + PDF), 1 free preview |
+| **Pricing** | £27.99 storybooks, £9.99-34.99 prints, £3.99 shipping (free over £30) |
 
 ---
 
@@ -580,13 +592,95 @@ Mobile, accessibility, performance, security.
 
 ---
 
-## Wave III — Human Validation & Polish ← **NOW PRIORITISED FIRST**
+## Wave P — Privacy & Compliance ← **NOW PRIORITISED FIRST**
 
 **Dependencies**: Wave I complete (basic flows working)
 
+**Owner**: Full team
+
+**Status**: 🔜 **NEXT** — New wave added for GDPR compliance and MVP scope refinement
+
+Privacy, compliance, and MVP scope changes required before human testing. Ensures data handling is compliant and product scope is refined.
+
+### Rationale
+
+1. UK/EU data residency required for processing user photos (especially children's)
+2. GDPR compliance features needed before any user testing
+3. MVP scope refinement reduces complexity for testing
+4. Must be in place before E2E tests (would need to retest after provider switch)
+
+### Tasks
+
+#### P.1 — UK/EU AI Provider
+- [ ] Contact Stability AI enterprise re: UK/EU-only deployment
+- [ ] Evaluate self-hosted option (OVHcloud/Scaleway) if needed
+- [ ] Implement provider switch (replace Replicate)
+- [ ] Update AI service configuration
+- [ ] Sign DPA with chosen provider
+
+#### P.2 — Photo Upload Consent Flow
+- [ ] Photo upload consent UI (checkbox + explanation)
+- [ ] Parent confirmation checkbox
+- [ ] Link to privacy policy section
+- [ ] "Delete photo now" option
+- [ ] GDPR-compliant consent storage
+
+#### P.3 — Avatar Selector (Hybrid Approach)
+- [ ] Avatar selector component
+  - Gender (2-3 options)
+  - Skin tone (6-8 swatches)
+  - Hair colour (6-8 options)
+  - Hair style (4-6 options)
+- [ ] Live preview of character
+- [ ] "Use photo instead" toggle
+- [ ] Store selection in storybook project
+
+#### P.4 — Privacy & Data Handling
+- [ ] Privacy policy page (children's data section)
+- [ ] "Delete my account" API endpoint
+- [ ] "Delete my account" UI in account settings
+- [ ] Anonymisation logic for orders (keep 6 years, anonymise personal data)
+- [ ] 30-day auto-delete scheduled job for unused photos
+- [ ] DPIA document (internal)
+
+#### P.5 — MVP Scope Refinement
+- [ ] Update product seeding (remove apparel, keep prints + storybooks)
+- [ ] Hide apparel from product listing UI
+- [ ] Reduce free credits to 20-30
+- [ ] Implement credit pack purchase (Stripe products)
+- [ ] Limit storybook themes to 1-3
+- [ ] Single storybook format (hardcover + optional PDF)
+- [ ] 1 free storybook preview (watermarked), then credits
+
+#### P.6 — AI Generation Changes
+- [ ] Low-res previews (1024×1024) for cost efficiency
+- [ ] Print-quality generation (2048×2048) only after payment
+- [ ] Block direct image downloads (only via product purchase)
+- [ ] Watermark storybook previews
+
+### Exit Criteria
+
+- [ ] AI processing happens in UK/EU only
+- [ ] Photo consent flow complete and tested
+- [ ] Avatar selector working as alternative to photo
+- [ ] "Delete my account" feature working
+- [ ] Privacy policy updated
+- [ ] DPIA documented
+- [ ] Apparel hidden from UI
+- [ ] Credit packs purchasable
+- [ ] Storybook scope limited
+
+### Tests: 30+ (new tests for consent, deletion, avatar)
+
+---
+
+## Wave III — Human Validation & Polish
+
+**Dependencies**: Wave P complete (privacy/compliance in place)
+
 **Owner**: Product owner + Developer
 
-**Status**: 🔜 **NEXT** — Reprioritised to run before Wave II
+**Status**: ⏸️ After Wave P
 
 Human walkthrough of the complete application to identify UI/UX issues, refine copy, and polish the experience. This ensures the app works end-to-end before investing in comprehensive E2E test coverage.
 
@@ -814,7 +908,7 @@ Production deployment and monitoring setup.
 
 ---
 
-# Parallel Execution Timeline (Revised 2026-01-21)
+# Parallel Execution Timeline (Revised 2026-01-23)
 
 ```
 Week 1-2:   ████████████████████████████████████████████
@@ -833,26 +927,31 @@ Week 7-8:   ██████████████████████�
             Fulfilment                Polish & QA              🟡 E PARTIAL
             (Dev 1 + Dev 3)           (Dev 2 + QA)
 
-Week 9:     ████████████████████████████████████████████
-            Wave III — Human Validation & Polish               ← NOW
-            Manual flows, UI polish, copy review, edge cases
-
-Week 10:    ████████████████████████████████████████████
-            Wave II — E2E Testing (ALL TEAM)                   ← NEXT
-            Fix tests, database connection, full coverage
+Week 9-10:  ████████████████████████████████████████████
+            Wave P — Privacy & Compliance (ALL TEAM)           ← NOW
+            UK/EU provider, consent flows, avatar selector,
+            delete account, MVP scope refinement
 
 Week 11:    ████████████████████████████████████████████
+            Wave III — Human Validation & Polish               ← NEXT
+            Manual flows, UI polish, copy review, edge cases
+
+Week 12:    ████████████████████████████████████████████
+            Wave II — E2E Testing (ALL TEAM)
+            Fix tests, database connection, full coverage
+
+Week 13:    ████████████████████████████████████████████
             Layer 3 — Verification (ALL TEAM)
             UAT, bug fixes, security audit
 
-Week 12:    ████████████████████████████████████████████
+Week 14:    ████████████████████████████████████████████
             Layer 4 — Deployment (ALL TEAM)
             Production setup, monitoring, launch
 ```
 
 ---
 
-# Workstream Dependencies Matrix (Revised 2026-01-21)
+# Workstream Dependencies Matrix (Revised 2026-01-23)
 
 | Workstream | Depends On | Blocks | Status |
 |------------|------------|--------|--------|
@@ -861,14 +960,18 @@ Week 12:    ██████████████████████�
 | B (Builder) | Wave 0 | Wave I | ✅ Complete |
 | C (Commerce) | Wave 0 | Wave I | ✅ Complete |
 | Wave I | A, B, C | D, E | ✅ Complete |
-| D (Fulfilment) | Wave I | Wave III | ✅ Complete |
-| E (Polish) | Wave I | Wave III | 🟡 Partial |
-| **Wave III (Human Polish)** | D, E (partial) | Wave II | 🔜 **NEXT** |
-| Wave II (E2E) | Wave III | Layer 3 | ⏸️ Deferred |
+| D (Fulfilment) | Wave I | Wave P | ✅ Complete |
+| E (Polish) | Wave I | Wave P | 🟡 Partial |
+| **Wave P (Privacy/Compliance)** | D, E (partial) | Wave III | 🔜 **NEXT** |
+| Wave III (Human Polish) | Wave P | Wave II | ⏸️ After Wave P |
+| Wave II (E2E) | Wave III | Layer 3 | ⏸️ After Wave III |
 | Layer 3 (Verification) | Wave II | Layer 4 | 🔜 Pending |
 | Layer 4 (Deployment) | Layer 3 | — | 🔜 Pending |
 
-**Key Change**: Wave III now runs BEFORE Wave II. This ensures the app is working end-to-end and polished before investing in comprehensive E2E test coverage.
+**Key Changes (2026-01-23)**:
+1. **Wave P added** — Privacy & Compliance must complete before human testing
+2. **MVP scope refined** — Storybooks + Prints only (apparel hidden)
+3. **UK/EU AI provider** — Data residency required for GDPR compliance
 
 ---
 
@@ -1051,6 +1154,34 @@ SENTRY_DSN=xxx
 ---
 
 # Revision History
+
+## 2026-01-23 — Privacy/Compliance Wave & MVP Scope Refinement
+
+**Changes**:
+1. **Wave P (Privacy & Compliance) added** — New wave before human testing
+2. **MVP scope refined** — Storybooks + Prints only (apparel hidden)
+3. **UK/EU AI provider required** — Stability AI uses US servers, need alternative
+4. **GDPR features added** — Consent flow, avatar selector, delete account, data retention
+
+**Rationale**:
+1. User photos (especially children's) require UK/EU data residency
+2. GDPR compliance features must be in place before any user testing
+3. Switching AI provider after E2E testing would require full retest
+4. Simplified product scope reduces testing complexity
+
+**New Priority Order**:
+1. Wave P: Privacy & Compliance — UK/EU provider, consent flows, MVP scope
+2. Wave III: Human Polish — Manual walkthrough, UI, copy
+3. Wave II: E2E Testing — Fix tests, achieve coverage
+4. E.3: Performance — Lighthouse audit (deferred)
+
+**Research Documents Created**:
+- `planning/research/uk-eu-ai-providers.md` — Provider comparison
+- `planning/research/data-retention-legal-requirements.md` — GDPR/HMRC requirements
+- `planning/research/business-model-research-prompt.md` — Pricing research prompt
+- `planning/research/business-research-findings.txt` — Competitor analysis
+
+---
 
 ## 2026-01-21 — Priority Reorder
 

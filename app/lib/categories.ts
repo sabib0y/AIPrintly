@@ -8,6 +8,23 @@
 import type { ProductCategory } from '@prisma/client'
 
 /**
+ * All available product categories (full catalogue).
+ * Includes mugs and apparel which are hidden in MVP but available for future expansion.
+ */
+export const ALL_CATEGORIES: ProductCategory[] = ['MUG', 'APPAREL', 'PRINT', 'STORYBOOK']
+
+/**
+ * MVP categories only - Prints and Storybooks.
+ * Mugs and apparel are hidden in MVP scope but can be re-enabled in future phases.
+ */
+export const MVP_CATEGORIES: ProductCategory[] = ['PRINT', 'STORYBOOK']
+
+/**
+ * MVP category slugs for URL routing
+ */
+export const MVP_CATEGORY_SLUGS: string[] = ['prints', 'storybooks']
+
+/**
  * Map of URL-friendly category slugs to database category values
  */
 export const CATEGORY_SLUG_MAP: Record<string, ProductCategory> = {

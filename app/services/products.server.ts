@@ -7,7 +7,7 @@
 
 import type { Product, ProductVariant, ProductCategory, StockStatus } from '@prisma/client';
 import { prisma } from './prisma.server';
-import { CATEGORY_SLUG_MAP, CATEGORY_TO_SLUG_MAP } from '~/lib/categories';
+import { CATEGORY_SLUG_MAP, CATEGORY_TO_SLUG_MAP, MVP_CATEGORIES } from '~/lib/categories';
 
 // Re-export types from shared file for backwards compatibility
 export type {
@@ -325,4 +325,86 @@ export async function findVariantByAttributes(
       colour,
     },
   });
+}
+
+/**
+ * Get MVP products only (Prints and Storybooks).
+ * This is a convenience wrapper around getProducts that filters by MVP categories.
+ * Mugs and apparel are hidden in MVP scope but remain in the database for future phases.
+ *
+ * @param options - Filtering and pagination options (category is overridden)
+ * @returns Paginated product list filtered to MVP categories
+ *
+ * @example
+ * ```ts
+ * // Get first page of MVP products
+ * const result = await getMvpProducts();
+ *
+ * // Get MVP products with search
+ * const searched = await getMvpProducts({ search: 'canvas' });
+ * ```
+ */
+export async function getMvpProducts(
+  options: Omit<ProductListOptions, 'category'> = {}
+): Promise<ProductListResult<Product | ProductWithVariants>> {
+  const {
+    page = 1,
+    pageSize = 12,
+    search,
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+    includeVariants = false,
+  } = options;
+
+  // Build where clause filtering to MVP categories only
+  const where: {
+    isActive: boolean;
+    category: { in: ProductCategory[] };
+    OR?: Array<{ name?: { contains: string; mode: 'insensitive' }; description?: { contains: string; mode: 'insensitive' } }>;
+  } = {
+    isActive: true,
+    category: { in: MVP_CATEGORIES },
+  };
+
+  // Add search filter
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+    ];
+  }
+
+  // Calculate pagination
+  const skip = (page - 1) * pageSize;
+
+  // Execute queries in parallel
+  const [products, total] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      take: pageSize,
+      skip,
+      orderBy: { [sortBy]: sortOrder },
+      include: includeVariants ? { variants: true } : undefined,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  return {
+    products,
+    total,
+    page,
+    pageSize,
+    totalPages: total > 0 ? Math.ceil(total / pageSize) : 0,
+  };
+}
+
+/**
+ * Check if a category slug is an MVP category
+ *
+ * @param slug - Category slug (e.g., 'prints', 'mugs')
+ * @returns True if the category is available in MVP
+ */
+export function isMvpCategory(slug: string): boolean {
+  const category = CATEGORY_SLUG_MAP[slug.toLowerCase()];
+  return category ? MVP_CATEGORIES.includes(category) : false;
 }

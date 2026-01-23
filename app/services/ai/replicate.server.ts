@@ -72,6 +72,8 @@ function getApiToken(): string {
  */
 export class ReplicateProvider implements AIImageProvider {
   readonly name = 'replicate'
+  private lastRequestWidth?: number
+  private lastRequestHeight?: number
 
   /**
    * Check if Replicate is available and configured
@@ -98,6 +100,10 @@ export class ReplicateProvider implements AIImageProvider {
     }
 
     try {
+      // Store dimensions for later use
+      this.lastRequestWidth = request.width
+      this.lastRequestHeight = request.height
+
       // Build enhanced prompt with style
       const enhancedPrompt = buildEnhancedPrompt(request.prompt, request.style)
       const negativePrompt = buildNegativePrompt(
@@ -198,8 +204,8 @@ export class ReplicateProvider implements AIImageProvider {
             return {
               success: true,
               imageUrl: status.output[0],
-              width: DEFAULT_GENERATION_PARAMS.width,
-              height: DEFAULT_GENERATION_PARAMS.height,
+              width: this.lastRequestWidth || DEFAULT_GENERATION_PARAMS.width,
+              height: this.lastRequestHeight || DEFAULT_GENERATION_PARAMS.height,
               provider: this.name,
               providerJobId: predictionId,
               metadata: {
@@ -302,8 +308,8 @@ export class ReplicateProvider implements AIImageProvider {
           result: {
             success: true,
             imageUrl: prediction.output?.[0] || '',
-            width: DEFAULT_GENERATION_PARAMS.width,
-            height: DEFAULT_GENERATION_PARAMS.height,
+            width: this.lastRequestWidth || DEFAULT_GENERATION_PARAMS.width,
+            height: this.lastRequestHeight || DEFAULT_GENERATION_PARAMS.height,
             provider: this.name,
             providerJobId: jobId,
           },

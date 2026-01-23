@@ -1,7 +1,7 @@
 {
   "project": "AIPrintly Phase 1",
-  "lastUpdated": "2026-01-21T14:30:00Z",
-  "currentPhase": "Security & Accessibility hardening (E.2/E.4) complete",
+  "lastUpdated": "2026-01-23T12:00:00Z",
+  "currentPhase": "Wave P: Privacy & Compliance — UK/EU provider, consent flows, MVP scope",
   "waves": [
     {
       "id": "0",
@@ -740,21 +740,165 @@
           ]
         }
       ]
+    },
+    {
+      "id": "P",
+      "name": "Wave P — Privacy & Compliance",
+      "status": "in_progress",
+      "streams": [
+        {
+          "id": "P.1",
+          "name": "UK/EU AI Provider",
+          "type": "integration",
+          "status": "pending",
+          "dependencies": ["I.1"],
+          "files": [],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Contact Stability AI enterprise re: UK/EU deployment", "met": true },
+            { "description": "Evaluate self-hosted option if needed", "met": false },
+            { "description": "Implement provider switch", "met": false },
+            { "description": "Sign DPA with provider", "met": false }
+          ],
+          "notes": "Email drafted to enterprise@stability.ai. Awaiting response. Using Replicate for MVP development."
+        },
+        {
+          "id": "P.2",
+          "name": "Photo Upload Consent Flow",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/upload/PhotoConsentForm.tsx",
+            "app/components/ui/checkbox.tsx",
+            "app/routes/create.upload.tsx"
+          ],
+          "testFiles": [
+            "__tests__/components/upload/PhotoConsentForm.test.tsx",
+            "__tests__/components/ui/checkbox.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Consent UI with checkbox and explanation", "met": true },
+            { "description": "Parent confirmation checkbox", "met": true },
+            { "description": "Link to privacy policy section", "met": true },
+            { "description": "Delete photo option", "met": true }
+          ]
+        },
+        {
+          "id": "P.3",
+          "name": "Avatar Selector",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/storybook/AvatarSelector.tsx",
+            "app/components/storybook/AvatarPreview.tsx",
+            "app/components/storybook/types.ts"
+          ],
+          "testFiles": [
+            "__tests__/components/storybook/AvatarSelector.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Avatar selector component (gender, skin, hair)", "met": true },
+            { "description": "Live preview of character", "met": true },
+            { "description": "Use photo instead toggle", "met": true },
+            { "description": "Store selection in storybook project", "met": true }
+          ]
+        },
+        {
+          "id": "P.4",
+          "name": "Privacy & Data Handling",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/routes/privacy.tsx"
+          ],
+          "testFiles": [
+            "__tests__/routes/privacy.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Privacy policy page with children's data section", "met": true },
+            { "description": "Delete my account API endpoint", "met": false, "deferred": "Phase 2 - manual email handling sufficient for MVP" },
+            { "description": "Delete my account UI", "met": false, "deferred": "Phase 2" },
+            { "description": "Anonymisation logic for orders", "met": false, "deferred": "Phase 2" },
+            { "description": "30-day auto-delete job for unused photos", "met": false, "deferred": "Phase 2 - existing retention policy in place" },
+            { "description": "DPIA document", "met": false, "deferred": "Phase 2" }
+          ],
+          "notes": "Privacy policy complete. Account deletion deferred to Phase 2 - manual email handling via privacy@tactylai.co.uk."
+        },
+        {
+          "id": "P.5",
+          "name": "MVP Scope Refinement",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/lib/categories.ts",
+            "app/services/credits.server.ts",
+            "app/lib/credit-packs.ts",
+            "app/routes/api.credits.purchase.ts",
+            "app/routes/credits.purchase.tsx",
+            "app/routes/credits.success.tsx",
+            "app/components/credits/CreditPackSelector.tsx"
+          ],
+          "testFiles": [
+            "__tests__/lib/credit-packs.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Update product seeding (prints + storybooks only)", "met": true },
+            { "description": "Hide apparel from UI", "met": true },
+            { "description": "Reduce free credits to 20-30", "met": true },
+            { "description": "Credit pack purchase flow", "met": true },
+            { "description": "Limit storybook themes to 1-3", "met": true },
+            { "description": "Single storybook format", "met": true }
+          ],
+          "notes": "MVP_CATEGORIES: PRINT + STORYBOOK only. 25 credits for registered users. Credit packs: 100/£4.99, 250/£9.99, 700/£19.99."
+        },
+        {
+          "id": "P.6",
+          "name": "AI Generation Changes",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/services/ai/provider.interface.ts",
+            "app/services/ai/print-quality.server.ts",
+            "app/routes/api.assets.$id.image.ts",
+            "app/services/watermark.server.ts",
+            "app/services/storybook-preview.server.ts"
+          ],
+          "testFiles": [
+            "__tests__/services/watermark.server.test.ts",
+            "__tests__/services/storybook-preview.server.test.ts",
+            "__tests__/routes/api.assets.$id.image.test.ts",
+            "__tests__/services/ai/resolution.test.ts",
+            "__tests__/services/ai/print-quality.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Low-res previews (1024x1024)", "met": true },
+            { "description": "Print-quality (2048x2048) only after payment", "met": true },
+            { "description": "Block direct image downloads", "met": true },
+            { "description": "Watermark storybook previews", "met": true }
+          ],
+          "notes": "97 tests passing. Resolution tiers implemented. Asset proxy blocks direct downloads. Sharp-based watermarking."
+        }
+      ]
     }
   ],
   "summary": {
-    "totalTasks": 36,
-    "completed": 32,
+    "totalTasks": 42,
+    "completed": 37,
     "inProgress": 1,
-    "pending": 3,
+    "pending": 4,
     "blocked": 0
   },
   "testResults": {
-    "total": 509,
-    "passing": 452,
-    "failing": 57,
-    "lastRun": "2026-01-20T21:48:00Z",
-    "notes": "57 failures are test infrastructure issues (missing React Router context), not logic bugs. 35 new fulfilment tests passing."
+    "total": 776,
+    "passing": 749,
+    "failing": 27,
+    "lastRun": "2026-01-23T12:00:00Z",
+    "notes": "267 new Wave P tests added. 97 P.6 tests passing. 27 failures are pre-existing React Router context issues."
   },
   "notes": {
     "2026-01-19-wave0": "Wave 0 Foundation complete. React Router v7 + Tailwind CSS v4 + Prisma schema (14 models + storage policy fields). UI component library, layout components, auth shell, page shells, testing setup.",
@@ -765,6 +909,9 @@
     "2026-01-20-fulfilment": "Workstream D complete. Printful and Blurb integrations with webhooks, order routing service, order tracking page. 35 new tests. E.1 Mobile QA audit complete with issues tracker.",
     "2026-01-20-e2e": "Wave II E2E testing started. Playwright infrastructure created with 8 page objects, test fixtures, and multi-browser config. Critical path tests next.",
     "2026-01-20-mobile": "Mobile builder touch support fixed. Implemented touch events, pinch-to-zoom, two-finger rotation in Canvas.tsx. Context-aware help text added. 3 critical issues resolved.",
-    "2026-01-21-security": "Security & accessibility hardening. Added auth rate limiting (5 attempts/15min per IP), upgraded session cookie to sameSite strict. Fixed form error announcements (role=alert), heading hierarchy, skip link, dialog aria labels. Created audit reports."
+    "2026-01-21-security": "Security & accessibility hardening. Added auth rate limiting (5 attempts/15min per IP), upgraded session cookie to sameSite strict. Fixed form error announcements (role=alert), heading hierarchy, skip link, dialog aria labels. Created audit reports.",
+    "2026-01-22-flow-testing": "Wave III flow testing. Fixed ES module bug in AI service (require→import). Replicate API working. Upload→Build and Generate→Build flows both working. Variant auto-select confirmed. Cart/Checkout next.",
+    "2026-01-22-business-model": "Business model & pricing defined. MVP scope: Storybooks + Prints only (no apparel). AI credits: 20-30 free, packs at £4.99-£19.99. Storybooks £27.99 (Wonderbly pricing). Photo upload with GDPR consent flow, 30-day retention. ICO Children's Code reviewed — ~8/15 standards apply. Need Replicate DPA. Bundles/upsells deferred to Phase 2.",
+    "2026-01-23-wave-p": "Wave P Privacy & Compliance nearly complete (5/6 streams done). P.2: PhotoConsentForm with GDPR checkboxes (52 tests). P.3: Avatar selector with gender/skin/hair customisation (53 tests). P.4: Privacy policy with children's data section (45 tests), account deletion deferred to Phase 2. P.5: MVP scope refined (prints + storybooks), 25 credits for registered, credit pack purchase flow. P.6: Low-res previews, asset proxy, watermarks (97 tests). P.1 pending: Email drafted to Stability AI, awaiting response. Using Replicate for MVP development. App rebranded to Tactyl (tactylai.co.uk)."
   }
 }

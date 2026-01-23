@@ -148,6 +148,8 @@ export default function CreateGeneratePage() {
                     src={generatedAsset.storageUrl}
                     alt="Generated preview"
                     className="w-full rounded-lg"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
                   />
                   <p className="mt-2 text-sm text-green-700 dark:text-green-300">
                     {generatedAsset.width} x {generatedAsset.height} pixels

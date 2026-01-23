@@ -180,6 +180,66 @@ export async function retrieveCheckoutSession(
 }
 
 /**
+ * Handle successful credit purchase
+ *
+ * Called when checkout.session.completed webhook is received for credit purchases.
+ *
+ * @param session - Stripe checkout session
+ * @returns User ID
+ */
+export async function handleCreditPurchaseCompleted(
+  session: Stripe.Checkout.Session
+): Promise<string> {
+  const { userId, packId, credits } = session.metadata || {}
+
+  if (!userId) {
+    throw new Error('Missing user ID in metadata')
+  }
+
+  if (!packId || !credits) {
+    throw new Error('Missing pack information in metadata')
+  }
+
+  const creditsAmount = Number(credits)
+
+  if (isNaN(creditsAmount) || creditsAmount <= 0) {
+    throw new Error('Invalid credits amount')
+  }
+
+  // Import credits service (circular dependency prevention)
+  const { addCredits } = await import('./credits.server')
+
+  // Add credits to user account
+  const result = await addCredits(
+    '', // sessionId not needed for registered users
+    userId,
+    creditsAmount,
+    'PURCHASE',
+    {
+      packId,
+      stripeSessionId: session.id,
+      stripePaymentIntentId:
+        typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id || null,
+    }
+  )
+
+  if (!result.success) {
+    throw new Error(`Failed to add credits: ${result.error}`)
+  }
+
+  console.log('Credits added:', {
+    userId,
+    amount: creditsAmount,
+    newBalance: result.newBalance,
+    packId,
+  })
+
+  return userId
+}
+
+/**
  * Handle successful checkout
  *
  * Called when checkout.session.completed webhook is received.
@@ -196,7 +256,14 @@ export async function handleCheckoutCompleted(
     shippingAddress: shippingAddressJson,
     subtotalPence,
     shippingPence,
+    type,
   } = session.metadata || {}
+
+  // Check if this is a credit purchase
+  if (type === 'credit_purchase') {
+    await handleCreditPurchaseCompleted(session)
+    return 'credit_purchase'
+  }
 
   if (!appSessionId) {
     throw new Error('Missing session ID in metadata')

@@ -9,8 +9,7 @@ import { Link, useLoaderData, useSearchParams } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { ProductCard, ProductCardSkeleton } from '~/components/products/ProductCard';
-import { getProducts, type ProductWithVariants } from '~/services/products.server';
-import { CATEGORY_SLUG_MAP } from '~/lib/categories';
+import { getMvpProducts, type ProductWithVariants } from '~/services/products.server';
 
 export const meta: MetaFunction = () => {
   return [
@@ -18,31 +17,33 @@ export const meta: MetaFunction = () => {
     {
       name: 'description',
       content:
-        'Browse our collection of customisable print products including mugs, apparel, prints, and storybooks.',
+        'Browse our collection of customisable print products including prints and storybooks.',
     },
   ];
 };
 
 /**
- * Categories for filter navigation
+ * Categories for filter navigation.
+ * MVP scope: Only Prints and Storybooks are shown.
+ * Mugs and apparel are available in the database for future expansion.
  */
 const categories = [
   { name: 'All', href: '/products', slug: '' },
-  { name: 'Mugs', href: '/products/mugs', slug: 'mugs' },
-  { name: 'Apparel', href: '/products/apparel', slug: 'apparel' },
   { name: 'Prints', href: '/products/prints', slug: 'prints' },
   { name: 'Storybooks', href: '/products/storybooks', slug: 'storybooks' },
 ];
 
 /**
- * Loader function to fetch products from the database
+ * Loader function to fetch products from the database.
+ * MVP scope: Only fetches Prints and Storybooks categories.
  */
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get('page') ?? '1', 10);
   const search = url.searchParams.get('search') ?? undefined;
 
-  const result = await getProducts({
+  // Use getMvpProducts to filter to Prints and Storybooks only
+  const result = await getMvpProducts({
     page: Math.max(1, page),
     pageSize: 12,
     search,

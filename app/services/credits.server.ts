@@ -2,7 +2,7 @@
  * Credits Service
  *
  * Manages AI generation credits including check, deduct, refund, and initialisation.
- * Supports both guest sessions (3 credits) and registered users (10 credits).
+ * Supports both guest sessions (3 credits) and registered users (25 credits).
  */
 
 import { prisma } from './prisma.server'
@@ -14,9 +14,10 @@ import type { CreditTransactionReason } from '@prisma/client'
 export const GUEST_INITIAL_CREDITS = 3
 
 /**
- * Initial credits for registered users (signup bonus)
+ * Initial credits for registered users (signup bonus).
+ * Business model specifies 20-30 free credits; set to 25 for MVP.
  */
-export const REGISTERED_INITIAL_CREDITS = 10
+export const REGISTERED_INITIAL_CREDITS = 25
 
 /**
  * Credit check result

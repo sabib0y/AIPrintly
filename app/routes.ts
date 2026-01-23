@@ -14,6 +14,12 @@ export default [
   route("logout", "routes/logout.tsx"),
 
   // ==========================================================================
+  // Account management
+  // ==========================================================================
+  route("account", "routes/account.tsx"),
+  route("account/delete", "routes/account.delete.tsx"),
+
+  // ==========================================================================
   // Products routes
   // ==========================================================================
   route("products", "routes/products.tsx"),
@@ -102,6 +108,11 @@ export default [
   route("api/webhooks/stripe", "routes/api.webhooks.stripe.ts"),
   route("api/webhooks/printful", "routes/api.webhooks.printful.ts"),
   route("api/webhooks/blurb", "routes/api.webhooks.blurb.ts"),
+
+  // ==========================================================================
+  // API Routes - Account
+  // ==========================================================================
+  route("api/account/delete", "routes/api.account.delete.ts"),
 
   // ==========================================================================
   // Catch-all 404

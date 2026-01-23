@@ -640,6 +640,7 @@ function DesignElementComponent({
         alt="Design"
         className="h-full w-full object-contain pointer-events-none"
         draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
       />
 
       {/* Selection Handles */}

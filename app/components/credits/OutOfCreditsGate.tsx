@@ -134,16 +134,16 @@ export function OutOfCreditsGate({
             {isAuthenticated ? (
               <ul className="space-y-2 text-sm text-gray-600">
                 <li className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">10 credits</span>
-                  <span>- Perfect for trying out</span>
+                  <span className="font-medium text-gray-900">100 credits</span>
+                  <span>- £4.99</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">25 credits</span>
-                  <span>- Best value</span>
+                  <span className="font-medium text-gray-900">250 credits</span>
+                  <span>- £9.99</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900">50 credits</span>
-                  <span>- For power creators</span>
+                  <span className="font-medium text-gray-900">700 credits</span>
+                  <span>- £19.99 (Best value)</span>
                 </li>
               </ul>
             ) : (
