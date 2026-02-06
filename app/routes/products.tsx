@@ -62,6 +62,26 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 /**
+ * Get product image URL based on category
+ * In production, this would come from a CMS or product image storage
+ */
+function getProductImageUrl(product: ProductWithVariants): string {
+  // Check if there's an imageUrl in metadata
+  const metadata = product.metadata as Record<string, unknown> | null;
+  if (metadata?.imageUrl && typeof metadata.imageUrl === 'string') {
+    return metadata.imageUrl;
+  }
+
+  // Use category-based placeholder images (MVP: Prints and Storybooks only)
+  const categoryImages: Record<string, string> = {
+    PRINT: 'https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=400&h=400&fit=crop&q=80',
+    STORYBOOK: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop&q=80',
+  };
+
+  return categoryImages[product.category] || categoryImages.PRINT;
+}
+
+/**
  * Get the minimum selling price from all variants
  */
 function getMinPrice(product: ProductWithVariants): number {
@@ -144,6 +164,7 @@ export default function ProductsPage() {
               <ProductCard
                 key={product.id}
                 product={product}
+                imageUrl={getProductImageUrl(product)}
                 stockStatus={getBestStockStatus(product)}
                 variantCount={product.variants?.length}
                 hasMultiplePrices={

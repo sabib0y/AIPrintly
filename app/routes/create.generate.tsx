@@ -55,20 +55,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 /**
  * Product type options for after generation
+ * MVP scope: Only Prints are shown (Storybooks have dedicated builder)
  */
 const PRODUCT_TYPES = [
-  {
-    id: 'mug',
-    name: 'Mug',
-    description: 'Custom ceramic mugs',
-    icon: '☕',
-  },
-  {
-    id: 'apparel',
-    name: 'Apparel',
-    description: 'T-shirts and hoodies',
-    icon: '👕',
-  },
   {
     id: 'print',
     name: 'Art Print',

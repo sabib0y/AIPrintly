@@ -225,11 +225,19 @@ export async function linkUserToSession(request: Request, userId: string) {
       data: { userId },
     })
 
-    // Update session credits to link to user
-    await prisma.userCredits.updateMany({
-      where: { sessionId, userId: null },
-      data: { userId },
+    // Check if user already has credits (e.g., from registration bonus)
+    const existingUserCredits = await prisma.userCredits.findUnique({
+      where: { userId },
     })
+
+    // Only update session credits to link to user if user doesn't already have credits
+    // This prevents unique constraint violations when user has been given signup credits
+    if (!existingUserCredits) {
+      await prisma.userCredits.updateMany({
+        where: { sessionId, userId: null },
+        data: { userId },
+      })
+    }
   }
 
   // Update cookie session

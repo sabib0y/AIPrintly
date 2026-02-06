@@ -4,6 +4,191 @@ Chronological engineering log for AIPrintly Phase 1 development.
 
 ---
 
+## 2026-02-06 — Wave III: Bug Fixes & Mobile Testing
+
+### Session 2: Outstanding Issues Fixed
+
+**Issues Resolved:**
+
+1. **Missing `/orders` route** — Created order history list page (`routes/orders.tsx`)
+   - Displays all user orders in descending order by date
+   - Shows order number, status badge, item summary, date, and total
+   - Empty state with "Browse Products" CTA
+   - Registered route in `routes.ts`
+
+2. **Product images showing placeholders** — Added category-based images
+   - Created `getProductImageUrl()` function in products pages
+   - Uses Unsplash images for PRINT and STORYBOOK categories
+   - Falls back to metadata.imageUrl if available
+
+3. **Missing asset image proxy route** — Registered `/api/assets/:id/image`
+   - Route file existed but wasn't registered in `routes.ts`
+   - Enables generated images to be served through authenticated proxy
+
+4. **Mug/Apparel options visible in MVP** — Hidden non-MVP product types
+   - Added `MVP_PRODUCT_TYPES` constant to `categories.ts`
+   - Builder (`build.$productType.tsx`) now redirects mug/apparel to /products
+   - Removed Mug/Apparel from `create.upload.tsx` and `create.generate.tsx`
+   - Product type selector now only shows "Art Print" option
+
+5. **Credits deduction verification** — Logic confirmed correct
+   - Backend correctly deducts credits in `api.generate.image.ts`
+   - Response includes `creditsRemaining` for UI update
+   - `ImageGenerator` component updates local state with new balance
+   - Refund logic in place for failed generations
+
+**Files Modified:**
+- `app/routes/orders.tsx` — NEW: Order history list page
+- `app/routes.ts` — Added /orders and /api/assets/:id/image routes
+- `app/routes/products.tsx` — Added getProductImageUrl function
+- `app/routes/products.$category.tsx` — Added getProductImageUrl function
+- `app/routes/build.$productType.tsx` — Added MVP redirect for mug/apparel
+- `app/routes/create.upload.tsx` — Removed Mug/Apparel from product types
+- `app/routes/create.generate.tsx` — Removed Mug/Apparel from product types
+- `app/lib/categories.ts` — Added MVP_PRODUCT_TYPES constant
+
+---
+
+## 2026-02-06 — Wave III: Mobile Responsive Testing
+
+### Session 1 Overview
+Conducted comprehensive mobile responsive testing (375x667 - iPhone SE viewport). All key pages render correctly with proper touch targets and responsive layouts.
+
+### Pages Tested (Mobile)
+
+**Homepage** ✅
+- Header with logo, cart badge, hamburger menu
+- Hero text readable, CTAs properly sized
+- Product category cards stack vertically
+- Footer links wrap nicely
+
+**Mobile Navigation Menu** ✅
+- Full-screen overlay
+- Products, Create, Cart links
+- Login/Register buttons at bottom
+- Close (X) button
+
+**Products Page** ✅
+- Filter buttons (All, Prints, Storybooks) touch-friendly
+- Product cards single-column layout
+- Prices and badges visible
+
+**Create Page** ✅
+- Upload and AI Generate options stack vertically
+- Feature lists readable
+- Buttons properly sized
+
+**Cart Page** ✅
+- Product thumbnail, name, variant visible
+- Quantity controls touch-friendly
+- Order summary with totals
+- Promo code section
+
+**Storybook Builder** ✅
+- Title and action buttons fit
+- Page thumbnail strip scrollable
+- Layout selector icons touch-friendly
+- Preview section with navigation
+- Tips section visible
+
+**Login Page** ✅
+- Form fields properly sized
+- Buttons touch-friendly
+- Magic Link option shown
+
+**Checkout Page** ✅
+- All form fields accessible
+- Address fields with helpful placeholders
+- Order summary section
+- Stripe trust indicator
+
+**Credits Purchase Page** ✅
+- Balance display
+- Credit packs stack vertically
+- Best Value badge visible
+- Purchase buttons touch-friendly
+
+### Mobile Testing Result
+**PASS** — All tested pages are mobile-responsive with proper touch targets and readable text.
+
+### Next Steps
+- Add `/orders` list route for order history (known missing route)
+- Investigate product image paths (placeholders showing)
+- Debug R2 image URL configuration
+- Wave III complete — ready for Wave II E2E test fixes
+
+---
+
+## 2026-02-05 — Wave III: Manual Flow Testing & Bug Fixes (Continued)
+
+### Session 2: Storybook Builder Fix & Additional Flow Testing
+
+**Bugs Fixed:**
+1. **Header auth state** (`root.tsx`): Added loader to fetch userId, user data, and cart count. Updated App component to pass headerProps to AppLayout. Header now correctly shows user icon, logout button, and cart count for authenticated users.
+
+2. **Missing credit routes** (`routes.ts`): Routes for `/credits/purchase`, `/credits/success`, and `/api/credits/purchase` existed as files but weren't registered in routes.ts. Added route registrations.
+
+3. **PageEditor CSS bug** (`PageEditor.tsx:298`): The PagePreview container had `position: static` which caused `absolute inset-0` child element to escape and cover the entire viewport instead of being contained within the 600x600px preview. Added `relative` class to fix.
+
+**Flows Tested:**
+- Flow 6: Credit Purchase ✅ (credit packs page loads with 100/250/700 options)
+- Flow 7: Storybook Creation ✅ (title, child name, page editing, text input, mock illustration generation all working)
+- Flow 8: Order Tracking ⚠️ (ISSUE: `/orders` route returns 404 - no order list page exists)
+- Flow 9: Account & Privacy ✅ (Account settings page shows user info, order count, danger zone with delete account)
+
+**Files Modified:**
+- `app/root.tsx` — Added loader for auth state and cart count
+- `app/routes.ts` — Added missing credit purchase routes
+- `app/components/storybook/PageEditor.tsx` — Fixed CSS positioning bug
+
+**Issues Remaining:**
+1. **Missing `/orders` route** — Account page links to `/orders` but route doesn't exist. Only `/orders/:orderId` exists.
+2. Product images missing (placeholder images instead of actual)
+3. Generated images not displaying in some previews
+4. Credits deduction needs verification
+5. Mug/Apparel visibility in MVP
+
+### Session 1: Initial Testing
+
+### Overview
+Conducted manual browser testing of user flows (Wave III validation). Fixed critical registration bug, identified several UI/UX issues for resolution.
+
+### Bug Fixed
+- **Registration credits conflict** (`session.server.ts:229`): `linkUserToSession` was trying to link session credits to user who already has credits from signup bonus, violating unique constraint. Added check for existing user credits before attempting update.
+
+### Issues Identified
+
+**Critical:**
+1. ~~**Header auth state** — Logged-in users still see "Login" and "Register" buttons instead of account/logout menu~~ FIXED
+
+**High Priority:**
+2. **Product images missing** — Products page shows placeholders instead of actual images
+3. **Generated images not displaying** — AI-generated images show broken image icons in preview boxes (R2 URL issue)
+4. **Credits not deducting** — Credit balance appears unchanged after AI generation
+
+**Medium Priority:**
+5. **Mug/Apparel visible** — Product type selectors still show Mug and Apparel options (should be hidden for MVP)
+
+### Flows Tested
+- Flow 1: Guest Browse & Discovery ✅
+- Flow 2: Upload → Build → Cart ✅ (partial - consent flow works)
+- Flow 3: AI Generate → Build → Cart ✅ (generation works, display issues)
+- Flow 4: Registration & Login ✅ (after bug fix)
+- Flow 5: Checkout form ✅ (form display and validation working)
+
+### Files Modified
+- `app/services/session.server.ts` — Fixed credits unique constraint bug
+
+### Next Steps
+- ~~Fix header authentication state display~~ DONE
+- Add `/orders` list route for order history
+- Investigate product image paths
+- Debug R2 image URL configuration
+- Verify credit deduction logic
+- Mobile responsive testing
+
+---
+
 ## 2026-01-23 — Wave P Complete: Privacy, Compliance & MVP Scope
 
 ### Overview

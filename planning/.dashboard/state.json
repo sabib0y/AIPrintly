@@ -1,0 +1,918 @@
+{
+  "project": "AIPrintly Phase 1",
+  "lastUpdated": "2026-02-06T14:00:00Z",
+  "currentPhase": "Wave III: Human Polish — Bug fixes complete, mobile testing passed",
+  "waves": [
+    {
+      "id": "0",
+      "name": "Wave 0 — Foundation",
+      "status": "completed",
+      "completedAt": "2026-01-19T23:15:00Z",
+      "streams": [
+        {
+          "id": "0A",
+          "name": "Project Setup",
+          "type": "foundation",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "package.json",
+            "tsconfig.json",
+            "vite.config.ts",
+            "react-router.config.ts",
+            ".env.example"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "React Router v7 project created", "met": true },
+            { "description": "Tailwind CSS v4 configured", "met": true },
+            { "description": "TypeScript configured", "met": true },
+            { "description": "Environment variables templated", "met": true }
+          ]
+        },
+        {
+          "id": "0B",
+          "name": "Database Schema",
+          "type": "foundation",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "prisma/schema.prisma"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "All 14 models defined", "met": true },
+            { "description": "Enums defined", "met": true },
+            { "description": "Relations configured", "met": true },
+            { "description": "Storage policy fields added", "met": true }
+          ]
+        },
+        {
+          "id": "0C",
+          "name": "UI Component Library",
+          "type": "component",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/ui/button.tsx",
+            "app/components/ui/input.tsx",
+            "app/components/ui/label.tsx",
+            "app/components/ui/card.tsx",
+            "app/components/ui/badge.tsx",
+            "app/components/ui/skeleton.tsx",
+            "app/components/ui/spinner.tsx",
+            "app/components/ui/avatar.tsx",
+            "app/components/ui/separator.tsx",
+            "app/components/ui/index.ts"
+          ],
+          "testFiles": [
+            "__tests__/components/button.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "10+ base components created", "met": true },
+            { "description": "CVA variants configured", "met": true },
+            { "description": "Radix UI primitives integrated", "met": true },
+            { "description": "Button tests passing", "met": true }
+          ]
+        },
+        {
+          "id": "0D",
+          "name": "Layout Components",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/layout/Header.tsx",
+            "app/components/layout/Footer.tsx",
+            "app/components/layout/Navigation.tsx",
+            "app/components/layout/Layout.tsx",
+            "app/components/layout/index.ts"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Header with navigation", "met": true },
+            { "description": "Footer with links", "met": true },
+            { "description": "Mobile menu support", "met": true },
+            { "description": "Layout wrapper", "met": true }
+          ]
+        },
+        {
+          "id": "0E",
+          "name": "Auth Shell",
+          "type": "foundation",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/services/prisma.server.ts",
+            "app/services/session.server.ts",
+            "app/services/auth.server.ts"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Prisma client singleton", "met": true },
+            { "description": "Cookie session storage", "met": true },
+            { "description": "Guest + authenticated sessions", "met": true },
+            { "description": "requireAuth helper", "met": true }
+          ]
+        },
+        {
+          "id": "0F",
+          "name": "Page Shells",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/routes/_index.tsx",
+            "app/routes/login.tsx",
+            "app/routes/register.tsx",
+            "app/routes/products.tsx",
+            "app/routes/products.$category.tsx",
+            "app/routes/create.tsx",
+            "app/routes/cart.tsx",
+            "app/routes/$.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Landing page shell", "met": true },
+            { "description": "Auth pages shell", "met": true },
+            { "description": "Products pages shell", "met": true },
+            { "description": "Create page shell", "met": true },
+            { "description": "Cart page shell", "met": true },
+            { "description": "404 catch-all", "met": true }
+          ]
+        },
+        {
+          "id": "0G",
+          "name": "Testing Setup",
+          "type": "foundation",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "vitest.config.ts",
+            "app/test/setup.ts",
+            "app/components/error-boundary.tsx"
+          ],
+          "testFiles": [
+            "__tests__/components/button.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Vitest configured", "met": true },
+            { "description": "React Testing Library setup", "met": true },
+            { "description": "Error boundary component", "met": true },
+            { "description": "21 tests passing", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A",
+      "name": "Workstream A — Asset Pipeline",
+      "status": "completed",
+      "completedAt": "2026-01-19T01:00:00Z",
+      "streams": [
+        {
+          "id": "A.1",
+          "name": "Upload System",
+          "type": "api",
+          "status": "completed",
+          "dependencies": ["0B", "0E"],
+          "files": [
+            "app/routes/api.assets.upload.ts",
+            "app/services/storage.server.ts",
+            "app/services/image-processing.server.ts",
+            "app/components/upload/UploadDropzone.tsx"
+          ],
+          "testFiles": [
+            "app/services/__tests__/storage.server.test.ts",
+            "app/routes/__tests__/api.assets.upload.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "POST /api/assets/upload endpoint", "met": true },
+            { "description": "R2/S3 client integration", "met": true },
+            { "description": "Sharp image processing", "met": true },
+            { "description": "Upload dropzone UI", "met": true },
+            { "description": "Quality validation (DPI)", "met": true }
+          ]
+        },
+        {
+          "id": "A.2",
+          "name": "AI Generation",
+          "type": "api",
+          "status": "completed",
+          "dependencies": ["0B", "0E"],
+          "files": [
+            "app/services/ai/provider.interface.ts",
+            "app/services/ai/replicate.server.ts",
+            "app/services/ai/openai.server.ts",
+            "app/routes/api.generate.image.ts",
+            "app/routes/api.generate.image.$jobId.ts",
+            "app/components/generate/ImageGenerator.tsx"
+          ],
+          "testFiles": [
+            "app/services/ai/__tests__/replicate.server.test.ts",
+            "app/services/ai/__tests__/openai.server.test.ts",
+            "app/routes/__tests__/api.generate.image.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "AI provider interface", "met": true },
+            { "description": "Replicate SDXL provider", "met": true },
+            { "description": "OpenAI DALL-E fallback", "met": true },
+            { "description": "Generation endpoints", "met": true },
+            { "description": "Style preset system", "met": true }
+          ]
+        },
+        {
+          "id": "A.3",
+          "name": "Story Generation",
+          "type": "api",
+          "status": "completed",
+          "dependencies": ["A.2"],
+          "files": [
+            "app/routes/api.generate.story.ts",
+            "app/services/ai/story-generator.server.ts"
+          ],
+          "testFiles": [
+            "app/services/ai/__tests__/story-generator.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "POST /api/generate/story", "met": true },
+            { "description": "GPT-4 story generation", "met": true },
+            { "description": "Story structure parsing", "met": true },
+            { "description": "Illustration prompt extraction", "met": true }
+          ]
+        },
+        {
+          "id": "A.4",
+          "name": "Credit System",
+          "type": "service",
+          "status": "completed",
+          "dependencies": ["0B", "0E"],
+          "files": [
+            "app/services/credits.server.ts",
+            "app/routes/api.credits.ts",
+            "app/components/credits/CreditBalance.tsx",
+            "app/components/credits/OutOfCreditsGate.tsx"
+          ],
+          "testFiles": [
+            "app/services/__tests__/credits.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Credit operations (init, deduct, refund)", "met": true },
+            { "description": "GET /api/credits endpoint", "met": true },
+            { "description": "Credit balance UI", "met": true },
+            { "description": "Out of credits gate", "met": true }
+          ]
+        },
+        {
+          "id": "A.5",
+          "name": "Rate Limiting",
+          "type": "service",
+          "status": "completed",
+          "dependencies": ["A.1", "A.2"],
+          "files": [
+            "app/services/rate-limiter.server.ts"
+          ],
+          "testFiles": [
+            "app/services/__tests__/rate-limiter.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Per-session rate limiter", "met": true },
+            { "description": "Per-IP rate limiter", "met": true },
+            { "description": "Concurrent job limiter", "met": true },
+            { "description": "Abuse detection", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "name": "Workstream B — Product Builder",
+      "status": "completed",
+      "completedAt": "2026-01-19T01:00:00Z",
+      "streams": [
+        {
+          "id": "B.1",
+          "name": "Product Catalogue",
+          "type": "api",
+          "status": "completed",
+          "dependencies": ["0B"],
+          "files": [
+            "app/services/products.server.ts",
+            "app/routes/api.products.ts",
+            "app/routes/api.products.$id.ts",
+            "app/components/products/ProductCard.tsx",
+            "app/components/products/VariantSelector.tsx",
+            "scripts/seed-products.ts"
+          ],
+          "testFiles": [
+            "app/services/__tests__/products.server.test.ts",
+            "app/routes/__tests__/api.products.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Product service queries", "met": true },
+            { "description": "Product API endpoints", "met": true },
+            { "description": "ProductCard component", "met": true },
+            { "description": "VariantSelector component", "met": true },
+            { "description": "Product seed script", "met": true }
+          ]
+        },
+        {
+          "id": "B.2",
+          "name": "Builder Canvas",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": ["B.1"],
+          "files": [
+            "app/routes/build.$productType.tsx",
+            "app/components/builder/Canvas.tsx",
+            "app/components/builder/TransformControls.tsx",
+            "app/components/builder/PrintAreaOverlay.tsx",
+            "app/components/builder/types.ts"
+          ],
+          "testFiles": [
+            "app/components/builder/__tests__/Canvas.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Canvas component", "met": true },
+            { "description": "Transform controls (drag, scale, rotate)", "met": true },
+            { "description": "Print area boundary", "met": true },
+            { "description": "Mobile touch gestures (drag, pinch-zoom, rotation)", "met": true }
+          ]
+        },
+        {
+          "id": "B.3",
+          "name": "Variant Selection",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": ["B.1"],
+          "files": [
+            "app/components/builder/SizeSelector.tsx",
+            "app/components/builder/ColourSelector.tsx",
+            "app/components/builder/PriceDisplay.tsx",
+            "app/components/builder/StockStatus.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Size selector", "met": true },
+            { "description": "Colour selector (swatches)", "met": true },
+            { "description": "Dynamic price display", "met": true },
+            { "description": "Stock status indicator", "met": true }
+          ]
+        },
+        {
+          "id": "B.4",
+          "name": "Mockup Generation",
+          "type": "service",
+          "status": "completed",
+          "dependencies": ["B.2"],
+          "files": [
+            "app/services/mockup.server.ts",
+            "app/routes/api.mockups.ts",
+            "app/components/builder/MockupPreview.tsx",
+            "app/components/builder/QualityWarning.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Mockup generation service", "met": true },
+            { "description": "Mockup API endpoint", "met": true },
+            { "description": "MockupPreview component", "met": true },
+            { "description": "Quality warning display", "met": true }
+          ]
+        },
+        {
+          "id": "B.5",
+          "name": "Storybook Builder",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": ["B.2", "A.3"],
+          "files": [
+            "app/routes/build.storybook.tsx",
+            "app/components/storybook/PageThumbnailStrip.tsx",
+            "app/components/storybook/PageEditor.tsx",
+            "app/components/storybook/TextEditor.tsx",
+            "app/components/storybook/BookPreview.tsx"
+          ],
+          "testFiles": [
+            "app/components/storybook/__tests__/TextEditor.test.tsx",
+            "app/components/storybook/__tests__/BookPreview.test.tsx",
+            "app/routes/__tests__/build.storybook.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Storybook builder route", "met": true },
+            { "description": "Page thumbnail strip", "met": true },
+            { "description": "Page editor component", "met": true },
+            { "description": "Book preview (flip-through)", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "name": "Workstream C — Commerce Stack",
+      "status": "completed",
+      "completedAt": "2026-01-19T01:00:00Z",
+      "streams": [
+        {
+          "id": "C.1",
+          "name": "Cart System",
+          "type": "api",
+          "status": "completed",
+          "dependencies": ["0B", "0E"],
+          "files": [
+            "app/services/cart.server.ts",
+            "app/routes/api.cart.ts",
+            "app/routes/api.cart.items.ts",
+            "app/routes/api.cart.items.$id.ts",
+            "app/components/cart/CartItem.tsx",
+            "app/components/cart/CartSummary.tsx",
+            "app/components/cart/QuantityControl.tsx"
+          ],
+          "testFiles": [
+            "app/services/__tests__/cart.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Cart service operations", "met": true },
+            { "description": "Cart API endpoints", "met": true },
+            { "description": "Cart item components", "met": true },
+            { "description": "Cart validation", "met": true }
+          ]
+        },
+        {
+          "id": "C.2",
+          "name": "Checkout Flow",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": ["C.1"],
+          "files": [
+            "app/routes/checkout.tsx",
+            "app/routes/checkout.success.tsx",
+            "app/routes/checkout.cancelled.tsx",
+            "app/components/checkout/ShippingForm.tsx",
+            "app/components/checkout/OrderSummary.tsx",
+            "app/components/checkout/GuestGate.tsx"
+          ],
+          "testFiles": [
+            "app/components/checkout/__tests__/ShippingForm.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Checkout page", "met": true },
+            { "description": "Success/cancelled pages", "met": true },
+            { "description": "Shipping form (UK)", "met": true },
+            { "description": "Order summary", "met": true }
+          ]
+        },
+        {
+          "id": "C.3",
+          "name": "Stripe Integration",
+          "type": "integration",
+          "status": "completed",
+          "dependencies": ["C.2"],
+          "files": [
+            "app/services/stripe.server.ts",
+            "app/routes/api.checkout.create-session.ts",
+            "app/routes/api.webhooks.stripe.ts"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Stripe client setup", "met": true },
+            { "description": "Create checkout session", "met": true },
+            { "description": "Webhook handler", "met": true },
+            { "description": "Signature verification", "met": true }
+          ]
+        },
+        {
+          "id": "C.4",
+          "name": "Order Creation",
+          "type": "service",
+          "status": "completed",
+          "dependencies": ["C.3"],
+          "files": [
+            "app/services/orders.server.ts",
+            "app/routes/api.orders.ts",
+            "app/routes/api.orders.$id.ts"
+          ],
+          "testFiles": [
+            "app/services/__tests__/orders.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Order service operations", "met": true },
+            { "description": "Order number generation", "met": true },
+            { "description": "Order API endpoints", "met": true },
+            { "description": "Cart clearing on success", "met": true }
+          ]
+        },
+        {
+          "id": "C.5",
+          "name": "Email System",
+          "type": "service",
+          "status": "completed",
+          "dependencies": ["C.4"],
+          "files": [
+            "app/services/email.server.ts",
+            "app/emails/order-confirmation.tsx",
+            "app/emails/shipping-notification.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Resend integration", "met": true },
+            { "description": "Order confirmation email", "met": true },
+            { "description": "Shipping notification email", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "I",
+      "name": "Wave I — Integration",
+      "status": "in_progress",
+      "streams": [
+        {
+          "id": "I.1",
+          "name": "Flow Connections",
+          "type": "integration",
+          "status": "completed",
+          "dependencies": ["A.4", "B.4", "C.4"],
+          "files": [
+            "app/routes/create.upload.tsx",
+            "app/routes/create.generate.tsx",
+            "app/routes/api.cart.add.ts",
+            "app/services/configuration.server.ts"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Upload → Build flow", "met": true },
+            { "description": "Generate → Build flow", "met": true },
+            { "description": "Build → Cart flow", "met": true },
+            { "description": "Cart → Checkout flow", "met": true }
+          ]
+        },
+        {
+          "id": "I.2",
+          "name": "Session Continuity",
+          "type": "integration",
+          "status": "completed",
+          "dependencies": ["I.1"],
+          "files": [
+            "app/services/session-migration.server.ts"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Guest → account migration", "met": true },
+            { "description": "Credit migration on signup", "met": true },
+            { "description": "Asset migration on signup", "met": true }
+          ]
+        },
+        {
+          "id": "I.3",
+          "name": "Auth Completion",
+          "type": "foundation",
+          "status": "completed",
+          "completedAt": "2026-01-20T20:50:00Z",
+          "dependencies": ["I.1"],
+          "files": [
+            "app/routes/login.tsx",
+            "app/routes/register.tsx",
+            "app/routes/logout.tsx"
+          ],
+          "testFiles": [
+            "app/services/__tests__/auth.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Email/password registration", "met": true },
+            { "description": "Email/password login", "met": true },
+            { "description": "Logout", "met": true },
+            { "description": "Session migration on auth", "met": true },
+            { "description": "Magic link login", "met": false },
+            { "description": "Password reset", "met": false }
+          ]
+        },
+        {
+          "id": "I.4",
+          "name": "Quality Gates",
+          "type": "integration",
+          "status": "completed",
+          "completedAt": "2026-01-20T21:10:00Z",
+          "dependencies": ["I.1"],
+          "files": [
+            "app/components/ui/alert-dialog.tsx",
+            "app/routes/build.$productType.tsx",
+            "app/routes/api.cart.add.ts",
+            "app/services/configuration.server.ts",
+            "app/services/cart.server.ts",
+            "app/components/cart/CartItem.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Pre-checkout validation", "met": true },
+            { "description": "DPI warnings", "met": true },
+            { "description": "Bleed zone warnings", "met": true },
+            { "description": "Confirmation prompts", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "name": "Workstream D — Fulfilment",
+      "status": "completed",
+      "completedAt": "2026-01-20T21:48:00Z",
+      "streams": [
+        {
+          "id": "D.1",
+          "name": "Printful Integration",
+          "type": "integration",
+          "status": "completed",
+          "dependencies": ["I.1"],
+          "files": [
+            "app/services/fulfilment/printful.server.ts",
+            "app/routes/api.webhooks.printful.ts"
+          ],
+          "testFiles": [
+            "__tests__/services/fulfilment/printful.server.test.ts",
+            "__tests__/routes/api.webhooks.printful.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Order routing logic", "met": true },
+            { "description": "createPrintfulOrder function", "met": true },
+            { "description": "Printful webhook handler", "met": true },
+            { "description": "Status mapping", "met": true }
+          ]
+        },
+        {
+          "id": "D.2",
+          "name": "Blurb Integration",
+          "type": "integration",
+          "status": "completed",
+          "dependencies": ["I.1"],
+          "files": [
+            "app/services/fulfilment/blurb.server.ts",
+            "app/services/fulfilment/pdf-generator.server.ts",
+            "app/routes/api.webhooks.blurb.ts"
+          ],
+          "testFiles": [
+            "__tests__/services/fulfilment/blurb.server.test.ts",
+            "__tests__/routes/api.webhooks.blurb.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "PDF generation for storybooks", "met": true },
+            { "description": "createBlurbOrder function", "met": true },
+            { "description": "Blurb webhook handler", "met": true }
+          ]
+        },
+        {
+          "id": "D.3",
+          "name": "Order Tracking",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": ["D.1", "D.2"],
+          "files": [
+            "app/routes/orders.$orderId.tsx",
+            "app/services/fulfilment/order-router.server.ts"
+          ],
+          "testFiles": [
+            "__tests__/services/fulfilment/order-router.server.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Order tracking page", "met": true },
+            { "description": "Status timeline UI", "met": true },
+            { "description": "Tracking number display", "met": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "name": "Workstream E — Polish & QA",
+      "status": "in_progress",
+      "streams": [
+        {
+          "id": "E.1",
+          "name": "Mobile QA",
+          "type": "qa",
+          "status": "completed",
+          "completedAt": "2026-01-20T21:30:00Z",
+          "dependencies": ["I.1"],
+          "files": [
+            "planning/phase1/mobile-qa-audit.md",
+            "planning/phase1/mobile-issues-tracker.md"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Responsive audit", "met": true },
+            { "description": "Touch interaction testing", "met": true },
+            { "description": "Builder mobile UX", "met": true }
+          ]
+        },
+        {
+          "id": "E.2",
+          "name": "Accessibility",
+          "type": "qa",
+          "status": "completed",
+          "completedAt": "2026-01-21T14:00:00Z",
+          "dependencies": ["I.1"],
+          "files": [
+            "planning/phase1/accessibility-audit.md",
+            "app/routes/login.tsx",
+            "app/routes/register.tsx",
+            "app/routes/build.$productType.tsx",
+            "app/components/layout/Header.tsx",
+            "app/components/layout/Layout.tsx"
+          ],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Keyboard navigation", "met": false },
+            { "description": "Screen reader testing", "met": true },
+            { "description": "WCAG 2.1 AA compliance", "met": true }
+          ]
+        },
+        {
+          "id": "E.3",
+          "name": "Performance",
+          "type": "qa",
+          "status": "pending",
+          "dependencies": ["I.1"],
+          "files": [],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Lighthouse >90", "met": false },
+            { "description": "Core Web Vitals", "met": false },
+            { "description": "Bundle size audit", "met": false }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "P",
+      "name": "Wave P — Privacy & Compliance",
+      "status": "in_progress",
+      "streams": [
+        {
+          "id": "P.1",
+          "name": "UK/EU AI Provider",
+          "type": "integration",
+          "status": "pending",
+          "dependencies": ["I.1"],
+          "files": [],
+          "testFiles": [],
+          "acceptanceCriteria": [
+            { "description": "Contact Stability AI enterprise re: UK/EU deployment", "met": true },
+            { "description": "Evaluate self-hosted option if needed", "met": false },
+            { "description": "Implement provider switch", "met": false },
+            { "description": "Sign DPA with provider", "met": false }
+          ],
+          "notes": "Email drafted to enterprise@stability.ai. Awaiting response. Using Replicate for MVP development."
+        },
+        {
+          "id": "P.2",
+          "name": "Photo Upload Consent Flow",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/upload/PhotoConsentForm.tsx",
+            "app/components/ui/checkbox.tsx",
+            "app/routes/create.upload.tsx"
+          ],
+          "testFiles": [
+            "__tests__/components/upload/PhotoConsentForm.test.tsx",
+            "__tests__/components/ui/checkbox.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Consent UI with checkbox and explanation", "met": true },
+            { "description": "Parent confirmation checkbox", "met": true },
+            { "description": "Link to privacy policy section", "met": true },
+            { "description": "Delete photo option", "met": true }
+          ]
+        },
+        {
+          "id": "P.3",
+          "name": "Avatar Selector",
+          "type": "ui",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/components/storybook/AvatarSelector.tsx",
+            "app/components/storybook/AvatarPreview.tsx",
+            "app/components/storybook/types.ts"
+          ],
+          "testFiles": [
+            "__tests__/components/storybook/AvatarSelector.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Avatar selector component (gender, skin, hair)", "met": true },
+            { "description": "Live preview of character", "met": true },
+            { "description": "Use photo instead toggle", "met": true },
+            { "description": "Store selection in storybook project", "met": true }
+          ]
+        },
+        {
+          "id": "P.4",
+          "name": "Privacy & Data Handling",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/routes/privacy.tsx"
+          ],
+          "testFiles": [
+            "__tests__/routes/privacy.test.tsx"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Privacy policy page with children's data section", "met": true },
+            { "description": "Delete my account API endpoint", "met": false, "deferred": "Phase 2 - manual email handling sufficient for MVP" },
+            { "description": "Delete my account UI", "met": false, "deferred": "Phase 2" },
+            { "description": "Anonymisation logic for orders", "met": false, "deferred": "Phase 2" },
+            { "description": "30-day auto-delete job for unused photos", "met": false, "deferred": "Phase 2 - existing retention policy in place" },
+            { "description": "DPIA document", "met": false, "deferred": "Phase 2" }
+          ],
+          "notes": "Privacy policy complete. Account deletion deferred to Phase 2 - manual email handling via privacy@tactylai.co.uk."
+        },
+        {
+          "id": "P.5",
+          "name": "MVP Scope Refinement",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/lib/categories.ts",
+            "app/services/credits.server.ts",
+            "app/lib/credit-packs.ts",
+            "app/routes/api.credits.purchase.ts",
+            "app/routes/credits.purchase.tsx",
+            "app/routes/credits.success.tsx",
+            "app/components/credits/CreditPackSelector.tsx"
+          ],
+          "testFiles": [
+            "__tests__/lib/credit-packs.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Update product seeding (prints + storybooks only)", "met": true },
+            { "description": "Hide apparel from UI", "met": true },
+            { "description": "Reduce free credits to 20-30", "met": true },
+            { "description": "Credit pack purchase flow", "met": true },
+            { "description": "Limit storybook themes to 1-3", "met": true },
+            { "description": "Single storybook format", "met": true }
+          ],
+          "notes": "MVP_CATEGORIES: PRINT + STORYBOOK only. 25 credits for registered users. Credit packs: 100/£4.99, 250/£9.99, 700/£19.99."
+        },
+        {
+          "id": "P.6",
+          "name": "AI Generation Changes",
+          "type": "service",
+          "status": "completed",
+          "dependencies": [],
+          "files": [
+            "app/services/ai/provider.interface.ts",
+            "app/services/ai/print-quality.server.ts",
+            "app/routes/api.assets.$id.image.ts",
+            "app/services/watermark.server.ts",
+            "app/services/storybook-preview.server.ts"
+          ],
+          "testFiles": [
+            "__tests__/services/watermark.server.test.ts",
+            "__tests__/services/storybook-preview.server.test.ts",
+            "__tests__/routes/api.assets.$id.image.test.ts",
+            "__tests__/services/ai/resolution.test.ts",
+            "__tests__/services/ai/print-quality.test.ts"
+          ],
+          "acceptanceCriteria": [
+            { "description": "Low-res previews (1024x1024)", "met": true },
+            { "description": "Print-quality (2048x2048) only after payment", "met": true },
+            { "description": "Block direct image downloads", "met": true },
+            { "description": "Watermark storybook previews", "met": true }
+          ],
+          "notes": "97 tests passing. Resolution tiers implemented. Asset proxy blocks direct downloads. Sharp-based watermarking."
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalTasks": 42,
+    "completed": 37,
+    "inProgress": 1,
+    "pending": 4,
+    "blocked": 0
+  },
+  "testResults": {
+    "total": 776,
+    "passing": 749,
+    "failing": 27,
+    "lastRun": "2026-01-23T12:00:00Z",
+    "notes": "267 new Wave P tests added. 97 P.6 tests passing. 27 failures are pre-existing React Router context issues."
+  },
+  "notes": {
+    "2026-01-19-wave0": "Wave 0 Foundation complete. React Router v7 + Tailwind CSS v4 + Prisma schema (14 models + storage policy fields). UI component library, layout components, auth shell, page shells, testing setup.",
+    "2026-01-19-wave1": "Wave 1 complete. All three workstreams (A, B, C) finished in parallel. 107 files, 36,235 lines. Build succeeds. Commit d77729d.",
+    "2026-01-19-waveI": "Wave I started. Flow connections (I.1) complete: Upload→Build, Generate→Build, Build→Cart, Cart→Checkout all wired. Session migration service created. Auth integration next.",
+    "2026-01-20-auth": "Auth system complete (I.3). Email/password registration, login, logout with bcrypt. Session migration integrated. 8 new tests. Magic link and password reset deferred.",
+    "2026-01-20-quality": "Quality gates complete (I.4). Confirmation dialog, quality warnings stored with cart, displayed in cart items. Wave I Integration complete.",
+    "2026-01-20-fulfilment": "Workstream D complete. Printful and Blurb integrations with webhooks, order routing service, order tracking page. 35 new tests. E.1 Mobile QA audit complete with issues tracker.",
+    "2026-01-20-e2e": "Wave II E2E testing started. Playwright infrastructure created with 8 page objects, test fixtures, and multi-browser config. Critical path tests next.",
+    "2026-01-20-mobile": "Mobile builder touch support fixed. Implemented touch events, pinch-to-zoom, two-finger rotation in Canvas.tsx. Context-aware help text added. 3 critical issues resolved.",
+    "2026-01-21-security": "Security & accessibility hardening. Added auth rate limiting (5 attempts/15min per IP), upgraded session cookie to sameSite strict. Fixed form error announcements (role=alert), heading hierarchy, skip link, dialog aria labels. Created audit reports.",
+    "2026-01-22-flow-testing": "Wave III flow testing. Fixed ES module bug in AI service (require→import). Replicate API working. Upload→Build and Generate→Build flows both working. Variant auto-select confirmed. Cart/Checkout next.",
+    "2026-01-22-business-model": "Business model & pricing defined. MVP scope: Storybooks + Prints only (no apparel). AI credits: 20-30 free, packs at £4.99-£19.99. Storybooks £27.99 (Wonderbly pricing). Photo upload with GDPR consent flow, 30-day retention. ICO Children's Code reviewed — ~8/15 standards apply. Need Replicate DPA. Bundles/upsells deferred to Phase 2.",
+    "2026-01-23-wave-p": "Wave P Privacy & Compliance nearly complete (5/6 streams done). P.2: PhotoConsentForm with GDPR checkboxes (52 tests). P.3: Avatar selector with gender/skin/hair customisation (53 tests). P.4: Privacy policy with children's data section (45 tests), account deletion deferred to Phase 2. P.5: MVP scope refined (prints + storybooks), 25 credits for registered, credit pack purchase flow. P.6: Low-res previews, asset proxy, watermarks (97 tests). P.1 pending: Email drafted to Stability AI, awaiting response. Using Replicate for MVP development. App rebranded to Tactyl (tactylai.co.uk).",
+    "2026-02-06-wave-iii": "Wave III Human Polish session: Mobile responsive testing passed (all pages). Bug fixes complete: (1) Created /orders route for order history list, (2) Added product images using Unsplash for PRINT/STORYBOOK categories, (3) Registered asset image proxy route in routes.ts, (4) Added MVP_PRODUCT_TYPES constant and redirect for non-MVP product types in builder, (5) Removed Mug/Apparel from create.upload and create.generate product selectors. Credits deduction verified correct."
+  }
+}

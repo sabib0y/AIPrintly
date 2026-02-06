@@ -26,27 +26,16 @@ export const meta: MetaFunction = () => {
     {
       name: 'description',
       content:
-        'Upload your own image to create custom print products like mugs, t-shirts, and art prints.',
+        'Upload your own image to create custom art prints and storybooks.',
     },
   ]
 }
 
 /**
  * Product type options for after upload
+ * MVP scope: Only Prints are shown (Storybooks have dedicated builder)
  */
 const PRODUCT_TYPES = [
-  {
-    id: 'mug',
-    name: 'Mug',
-    description: 'Custom ceramic mugs',
-    icon: '☕',
-  },
-  {
-    id: 'apparel',
-    name: 'Apparel',
-    description: 'T-shirts and hoodies',
-    icon: '👕',
-  },
   {
     id: 'print',
     name: 'Art Print',

@@ -53,6 +53,7 @@ export default [
   // ==========================================================================
   // Orders
   // ==========================================================================
+  route("orders", "routes/orders.tsx"),
   route("orders/:orderId", "routes/orders.$orderId.tsx"),
 
   // ==========================================================================
@@ -73,6 +74,7 @@ export default [
   // API Routes - Assets
   // ==========================================================================
   route("api/assets/upload", "routes/api.assets.upload.ts"),
+  route("api/assets/:id/image", "routes/api.assets.$id.image.ts"),
 
   // ==========================================================================
   // API Routes - AI Generation
@@ -82,9 +84,16 @@ export default [
   route("api/generate/story", "routes/api.generate.story.ts"),
 
   // ==========================================================================
+  // Credits purchase
+  // ==========================================================================
+  route("credits/purchase", "routes/credits.purchase.tsx"),
+  route("credits/success", "routes/credits.success.tsx"),
+
+  // ==========================================================================
   // API Routes - Credits
   // ==========================================================================
   route("api/credits", "routes/api.credits.ts"),
+  route("api/credits/purchase", "routes/api.credits.purchase.ts"),
 
   // ==========================================================================
   // API Routes - Mockups

@@ -5,11 +5,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Layout as AppLayout } from "~/components/layout";
+import { getSession, getUserIdFromSession } from "~/services/session.server";
+import { prisma } from "~/services/prisma.server";
+import { getCart } from "~/services/cart.server";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -23,6 +27,45 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
 ];
+
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await getSession(request);
+  const sessionId = session.get('id');
+  const userId = await getUserIdFromSession(request);
+
+  let user = null;
+  let cartItemCount = 0;
+
+  // Get user data if authenticated
+  if (userId) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true },
+    });
+    if (dbUser) {
+      user = {
+        name: dbUser.email.split('@')[0], // Use email prefix as name
+        email: dbUser.email,
+      };
+    }
+  }
+
+  // Get cart count
+  if (sessionId) {
+    try {
+      const cart = await getCart(sessionId);
+      cartItemCount = cart.itemCount;
+    } catch {
+      // Ignore cart errors
+    }
+  }
+
+  return {
+    isAuthenticated: !!userId,
+    user,
+    cartItemCount,
+  };
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,8 +86,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { isAuthenticated, user, cartItemCount } = useLoaderData<typeof loader>();
+
   return (
-    <AppLayout>
+    <AppLayout
+      headerProps={{
+        isAuthenticated,
+        user,
+        cartItemCount,
+      }}
+    >
       <Outlet />
     </AppLayout>
   );

@@ -296,7 +296,7 @@ function PagePreview({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800',
+        'relative overflow-hidden rounded-lg border-2 border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800',
         layoutClasses[page.layout]
       )}
       style={{ width, height }}

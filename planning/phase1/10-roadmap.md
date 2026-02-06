@@ -24,11 +24,11 @@ Each layer has explicit exit criteria.
 | Layer | Status |
 |-------|--------|
 | 1. Product Definition | ✅ Complete |
-| 2. Build (Workstreams A-E) | 🟡 In Progress (Wave 0 + A/B/C + Wave I + D done, E partial) |
-| 3. Verification (E2E + QA) | 🔄 Reordered (Privacy/Compliance → Human Polish → E2E) |
+| 2. Build (Workstreams A-E) | 🟡 In Progress (Wave 0 + A/B/C + Wave I + D + P done, E partial) |
+| 3. Verification (E2E + QA) | 🔄 Reordered (Human Polish → E2E) |
 | 4. Deployment | 🔜 Not started |
 
-**Overall Progress**: ~75% (Wave 0 + Workstreams A, B, C + Wave I + D complete, Privacy/Compliance wave added)
+**Overall Progress**: ~80% (Wave 0 + Workstreams A, B, C + Wave I + D + Wave P complete)
 
 ### Workstream Status
 
@@ -41,16 +41,16 @@ Each layer has explicit exit criteria.
 | Wave I — Integration | ✅ Complete | — |
 | D — Fulfilment | ✅ Complete | 35 passing |
 | E — Polish & QA | 🟡 In Progress (E.1, E.2, E.4 done) | — |
-| **Wave P — Privacy & Compliance** | 🔜 **NEXT** (new) | — |
-| Wave III — Human Polish | ⏸️ After Wave P | — |
+| Wave P — Privacy & Compliance | ✅ Complete (P.1 UK/EU provider pending response) | 267 passing |
+| **Wave III — Human Polish** | 🟡 In Progress (Mobile QA ✅, Bug fixes ✅) | — |
 | Wave II — E2E Testing | ⏸️ After Wave III | 8/20 passing |
 
-### Revised Priority Order (2026-01-23)
+### Revised Priority Order (2026-02-05)
 
-The roadmap has been adjusted to include privacy/compliance requirements and MVP scope changes:
+The roadmap has been adjusted following Wave P completion:
 
-1. **Wave P: Privacy & Compliance** — UK/EU AI provider, consent flows, data handling, MVP scope refinement
-2. **Wave III: Human Polish** — Manual walkthrough, UI refinements, copy/content review
+1. ~~**Wave P: Privacy & Compliance**~~ — ✅ Complete (UK/EU provider pending response)
+2. **Wave III: Human Polish** — Manual walkthrough, UI refinements, copy/content review ← **NEXT**
 3. **Wave II: E2E Testing** — Fix remaining test issues, achieve full coverage
 4. **E.3: Performance** — Lighthouse audit, optimisation (deferred)
 
@@ -592,13 +592,13 @@ Mobile, accessibility, performance, security.
 
 ---
 
-## Wave P — Privacy & Compliance ← **NOW PRIORITISED FIRST**
+## Wave P — Privacy & Compliance ✅
 
 **Dependencies**: Wave I complete (basic flows working)
 
 **Owner**: Full team
 
-**Status**: 🔜 **NEXT** — New wave added for GDPR compliance and MVP scope refinement
+**Status**: ✅ Complete (code done, P.1 UK/EU provider awaiting Stability AI Enterprise response)
 
 Privacy, compliance, and MVP scope changes required before human testing. Ensures data handling is compliant and product scope is refined.
 
@@ -674,13 +674,13 @@ Privacy, compliance, and MVP scope changes required before human testing. Ensure
 
 ---
 
-## Wave III — Human Validation & Polish
+## Wave III — Human Validation & Polish ← **IN PROGRESS**
 
 **Dependencies**: Wave P complete (privacy/compliance in place)
 
 **Owner**: Product owner + Developer
 
-**Status**: ⏸️ After Wave P
+**Status**: 🟡 **IN PROGRESS** — Mobile QA complete, bug fixes complete
 
 Human walkthrough of the complete application to identify UI/UX issues, refine copy, and polish the experience. This ensures the app works end-to-end before investing in comprehensive E2E test coverage.
 
@@ -928,12 +928,12 @@ Week 7-8:   ██████████████████████�
             (Dev 1 + Dev 3)           (Dev 2 + QA)
 
 Week 9-10:  ████████████████████████████████████████████
-            Wave P — Privacy & Compliance (ALL TEAM)           ← NOW
+            Wave P — Privacy & Compliance (ALL TEAM)           ✅ COMPLETE
             UK/EU provider, consent flows, avatar selector,
             delete account, MVP scope refinement
 
 Week 11:    ████████████████████████████████████████████
-            Wave III — Human Validation & Polish               ← NEXT
+            Wave III — Human Validation & Polish               ← NOW
             Manual flows, UI polish, copy review, edge cases
 
 Week 12:    ████████████████████████████████████████████
@@ -962,8 +962,8 @@ Week 14:    ██████████████████████�
 | Wave I | A, B, C | D, E | ✅ Complete |
 | D (Fulfilment) | Wave I | Wave P | ✅ Complete |
 | E (Polish) | Wave I | Wave P | 🟡 Partial |
-| **Wave P (Privacy/Compliance)** | D, E (partial) | Wave III | 🔜 **NEXT** |
-| Wave III (Human Polish) | Wave P | Wave II | ⏸️ After Wave P |
+| Wave P (Privacy/Compliance) | D, E (partial) | Wave III | ✅ Complete |
+| **Wave III (Human Polish)** | Wave P | Wave II | 🔜 **NEXT** |
 | Wave II (E2E) | Wave III | Layer 3 | ⏸️ After Wave III |
 | Layer 3 (Verification) | Wave II | Layer 4 | 🔜 Pending |
 | Layer 4 (Deployment) | Layer 3 | — | 🔜 Pending |
@@ -1149,7 +1149,7 @@ SENTRY_DSN=xxx
 
 ---
 
-*Last updated: 2026-01-21*
+*Last updated: 2026-02-06*
 
 ---
 

@@ -8,8 +8,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Link, useParams, useLoaderData, useSearchParams, useNavigate } from 'react-router';
 import type { LoaderFunctionArgs, MetaFunction } from 'react-router';
-import { data } from 'react-router';
+import { data, redirect } from 'react-router';
 import { Button } from '~/components/ui/button';
+import { MVP_PRODUCT_TYPES } from '~/lib/categories';
 import { Spinner } from '~/components/ui/spinner';
 import {
   AlertDialog,
@@ -93,6 +94,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       asset: null,
       error: 'Invalid product type',
     });
+  }
+
+  // MVP scope: Redirect non-MVP product types (mug, apparel) to products page
+  if (!MVP_PRODUCT_TYPES.includes(productType)) {
+    throw redirect('/products');
   }
 
   // Dynamic import to avoid server-only module being bundled for client

@@ -20,9 +20,14 @@ export const ALL_CATEGORIES: ProductCategory[] = ['MUG', 'APPAREL', 'PRINT', 'ST
 export const MVP_CATEGORIES: ProductCategory[] = ['PRINT', 'STORYBOOK']
 
 /**
- * MVP category slugs for URL routing
+ * MVP category slugs for URL routing (products page)
  */
 export const MVP_CATEGORY_SLUGS: string[] = ['prints', 'storybooks']
+
+/**
+ * MVP product type slugs for builder routing (/build/:productType)
+ */
+export const MVP_PRODUCT_TYPES: string[] = ['print', 'storybook']
 
 /**
  * Map of URL-friendly category slugs to database category values
